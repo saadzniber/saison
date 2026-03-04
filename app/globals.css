@@ -1,0 +1,57 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=DM+Sans:wght@300;400;500;600&display=swap');
+@import "tailwindcss";
+
+@theme inline {
+  /* Colors */
+  --color-bg: #FAFAF8;
+  --color-surface: #FFFFFF;
+  --color-surface-raised: #F5F3EF;
+  --color-ink: #1C1A14;
+  --color-ink-muted: #6B6454;
+  --color-ink-faint: #A8A090;
+  --color-border: #E5E3DD;
+  --color-border-strong: #C8C4BC;
+  --color-accent: #2D5016;
+  --color-accent-light: #4A7A25;
+  --color-accent-bg: #EEF4E8;
+  --color-warm: #D4A843;
+  --color-warm-bg: #FBF5E6;
+  --color-error: #B91C1C;
+  --color-error-bg: #FEF2F2;
+
+  /* Typography */
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-ui: 'DM Sans', system-ui, sans-serif;
+
+  /* Spacing / Layout */
+  --page-px: 20px;
+  --nav-height: 64px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { background: var(--color-bg); }
+body {
+  font-family: var(--font-ui);
+  color: var(--color-ink);
+  background: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+.page-content {
+  min-height: 100dvh;
+  padding: var(--page-px);
+  padding-bottom: calc(var(--nav-height) + 24px);
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+.animate-spin { animation: spin 0.8s linear infinite; }
+.animate-fade-in { animation: fadeIn 0.3s ease-out; }
+.animate-pulse { animation: pulse 2s ease-in-out infinite; }

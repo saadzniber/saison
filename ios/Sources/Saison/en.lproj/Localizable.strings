@@ -1,0 +1,136 @@
+/* Tabs */
+"tab_home" = "Home";
+"tab_recipes" = "Recipes";
+"tab_calendar" = "Calendar";
+"tab_seasonal" = "Seasonal";
+"tab_grocery" = "Grocery";
+
+/* Auth */
+"auth_tagline" = "Eat well, together.\nSeasonal recipes for your family.";
+"auth_sign_in_google" = "Sign in with Google";
+
+/* Greetings */
+"greeting_morning" = "Good morning";
+"greeting_afternoon" = "Good afternoon";
+"greeting_evening" = "Good evening";
+
+/* Home */
+"home_diversity_title" = "Plant diversity this week";
+"home_plants_this_week" = "unique plants this week";
+"home_upcoming" = "Upcoming meals";
+"home_no_upcoming" = "No meals planned yet";
+"home_activity" = "Recent activity";
+"home_no_activity" = "No recent activity";
+
+/* Diversity info */
+"diversity_info_title" = "The 30-plant challenge";
+"diversity_info_body" = "Research shows that eating 30 different plants per week supports gut health and overall wellbeing. Plants include fruits, vegetables, herbs, spices, nuts, seeds, and legumes. Saison helps you track your plant diversity across all the recipes your family cooks each week.";
+
+/* Onboarding */
+"onboarding_welcome" = "Set up your family to start planning meals together.";
+"onboarding_create_family" = "Create a family";
+"onboarding_join_family" = "Join a family";
+"onboarding_family_name" = "What should we call your family?";
+"onboarding_family_name_placeholder" = "Family name";
+"onboarding_create" = "Create";
+"onboarding_enter_code" = "Enter the invite code from your family";
+"onboarding_code_placeholder" = "Invite code";
+"onboarding_join" = "Join";
+
+/* Meals */
+"meal_breakfast" = "Breakfast";
+"meal_lunch" = "Lunch";
+"meal_dinner" = "Dinner";
+
+/* Seasons */
+"season_spring" = "Spring";
+"season_summer" = "Summer";
+"season_autumn" = "Autumn";
+"season_winter" = "Winter";
+
+/* Recipes */
+"recipes_my" = "My recipes";
+"recipes_starred" = "Starred";
+"recipes_community" = "Community";
+"recipes_search" = "Search recipes...";
+
+/* Recipe Detail */
+"recipe_prep" = "Prep";
+"recipe_cook" = "Cook";
+"recipe_servings" = "Servings";
+"recipe_your_rating" = "Your rating";
+"recipe_avg_rating" = "Average: %.1f (%d ratings)";
+"recipe_ingredients" = "Ingredients";
+"recipe_instructions" = "Instructions";
+"recipe_add_to_calendar" = "Add to calendar";
+"recipe_add_to_grocery" = "Add ingredients to grocery list";
+"recipe_select_date" = "Select date";
+"recipe_meal_type" = "Meal type";
+"recipe_confirm_add" = "Add to calendar";
+
+/* Create/Edit Recipe */
+"create_new_title" = "New recipe";
+"create_edit_title" = "Edit recipe";
+"create_basic_info" = "Basic info";
+"create_title" = "Title";
+"create_description" = "Description";
+"create_servings" = "Servings";
+"create_prep_time" = "Prep time";
+"create_cook_time" = "Cook time";
+"create_cuisine" = "Cuisine";
+"create_cuisine_id" = "Cuisine (e.g. french, italian)";
+"create_public" = "Share with community";
+"create_seasons_label" = "Seasons";
+"create_meal_types" = "Meal types";
+"create_ingredient_name" = "Ingredient";
+"create_ingredient_qty" = "Qty";
+"create_ingredient_unit" = "Unit";
+"create_is_produce" = "Is produce";
+"create_add_ingredient" = "Add ingredient";
+"create_step" = "Step description";
+"create_add_step" = "Add step";
+"create_produce_tags" = "Produce tags";
+"create_produce_placeholder" = "Add a produce tag";
+
+/* Calendar */
+"calendar_pick_recipe" = "Choose a recipe";
+
+/* Grocery */
+"grocery_empty" = "Your grocery list is empty";
+"grocery_add_first" = "Add your first item";
+"grocery_item_name" = "Item name";
+"grocery_qty" = "Qty";
+"grocery_unit" = "Unit";
+"grocery_add" = "Add item";
+"grocery_checked" = "Checked off";
+"grocery_clear_checked" = "Clear checked";
+
+/* Settings */
+"settings_title" = "Settings";
+"settings_profile" = "Profile";
+"settings_family" = "Family";
+"settings_family_name" = "Name";
+"settings_members" = "Members";
+"settings_invite_code" = "Invite code";
+"settings_no_family" = "No family linked";
+"settings_language" = "Language";
+"settings_sign_out" = "Sign out";
+"settings_delete_account" = "Delete account";
+"settings_delete_confirm" = "Are you sure you want to delete your account? This cannot be undone.";
+"settings_delete" = "Delete";
+
+/* Common */
+"cancel" = "Cancel";
+"save" = "Save";
+"done" = "Done";
+"back" = "Back";
+"error_generic" = "Something went wrong. Please try again.";
+"error_invalid_code" = "Invalid invite code. Please check and try again.";
+"error_title_required" = "Recipe title is required.";
+
+/* Nav aliases (for nav_* key pattern) */
+"nav_home" = "Home";
+"nav_recipes" = "Recipes";
+"nav_calendar" = "Calendar";
+"nav_seasonal" = "Seasonal";
+"nav_grocery" = "Grocery";

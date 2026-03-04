@@ -1,0 +1,136 @@
+/* Tabs */
+"tab_home" = "Accueil";
+"tab_recipes" = "Recettes";
+"tab_calendar" = "Calendrier";
+"tab_seasonal" = "Saison";
+"tab_grocery" = "Courses";
+
+/* Auth */
+"auth_tagline" = "Bien manger, ensemble.\nDes recettes de saison pour votre famille.";
+"auth_sign_in_google" = "Se connecter avec Google";
+
+/* Greetings */
+"greeting_morning" = "Bonjour";
+"greeting_afternoon" = "Bon apres-midi";
+"greeting_evening" = "Bonsoir";
+
+/* Home */
+"home_diversity_title" = "Diversite vegetale cette semaine";
+"home_plants_this_week" = "plantes uniques cette semaine";
+"home_upcoming" = "Repas a venir";
+"home_no_upcoming" = "Aucun repas prevu";
+"home_activity" = "Activite recente";
+"home_no_activity" = "Aucune activite recente";
+
+/* Diversity info */
+"diversity_info_title" = "Le defi des 30 plantes";
+"diversity_info_body" = "Les recherches montrent que manger 30 plantes differentes par semaine favorise la sante intestinale et le bien-etre general. Les plantes comprennent les fruits, les legumes, les herbes, les epices, les noix, les graines et les legumineuses. Saison vous aide a suivre la diversite vegetale de toutes les recettes que votre famille cuisine chaque semaine.";
+
+/* Onboarding */
+"onboarding_welcome" = "Creez votre famille pour commencer a planifier vos repas ensemble.";
+"onboarding_create_family" = "Creer une famille";
+"onboarding_join_family" = "Rejoindre une famille";
+"onboarding_family_name" = "Comment appeler votre famille ?";
+"onboarding_family_name_placeholder" = "Nom de famille";
+"onboarding_create" = "Creer";
+"onboarding_enter_code" = "Entrez le code d'invitation de votre famille";
+"onboarding_code_placeholder" = "Code d'invitation";
+"onboarding_join" = "Rejoindre";
+
+/* Meals */
+"meal_breakfast" = "Petit-dejeuner";
+"meal_lunch" = "Dejeuner";
+"meal_dinner" = "Diner";
+
+/* Seasons */
+"season_spring" = "Printemps";
+"season_summer" = "Ete";
+"season_autumn" = "Automne";
+"season_winter" = "Hiver";
+
+/* Recipes */
+"recipes_my" = "Mes recettes";
+"recipes_starred" = "Favoris";
+"recipes_community" = "Communaute";
+"recipes_search" = "Rechercher des recettes...";
+
+/* Recipe Detail */
+"recipe_prep" = "Preparation";
+"recipe_cook" = "Cuisson";
+"recipe_servings" = "Portions";
+"recipe_your_rating" = "Votre note";
+"recipe_avg_rating" = "Moyenne : %.1f (%d notes)";
+"recipe_ingredients" = "Ingredients";
+"recipe_instructions" = "Instructions";
+"recipe_add_to_calendar" = "Ajouter au calendrier";
+"recipe_add_to_grocery" = "Ajouter les ingredients a la liste";
+"recipe_select_date" = "Choisir une date";
+"recipe_meal_type" = "Type de repas";
+"recipe_confirm_add" = "Ajouter au calendrier";
+
+/* Create/Edit Recipe */
+"create_new_title" = "Nouvelle recette";
+"create_edit_title" = "Modifier la recette";
+"create_basic_info" = "Informations de base";
+"create_title" = "Titre";
+"create_description" = "Description";
+"create_servings" = "Portions";
+"create_prep_time" = "Temps de preparation";
+"create_cook_time" = "Temps de cuisson";
+"create_cuisine" = "Cuisine";
+"create_cuisine_id" = "Cuisine (ex: francaise, italienne)";
+"create_public" = "Partager avec la communaute";
+"create_seasons_label" = "Saisons";
+"create_meal_types" = "Types de repas";
+"create_ingredient_name" = "Ingredient";
+"create_ingredient_qty" = "Qte";
+"create_ingredient_unit" = "Unite";
+"create_is_produce" = "Est un produit frais";
+"create_add_ingredient" = "Ajouter un ingredient";
+"create_step" = "Description de l'etape";
+"create_add_step" = "Ajouter une etape";
+"create_produce_tags" = "Tags produits frais";
+"create_produce_placeholder" = "Ajouter un tag";
+
+/* Calendar */
+"calendar_pick_recipe" = "Choisir une recette";
+
+/* Grocery */
+"grocery_empty" = "Votre liste de courses est vide";
+"grocery_add_first" = "Ajouter votre premier article";
+"grocery_item_name" = "Nom de l'article";
+"grocery_qty" = "Qte";
+"grocery_unit" = "Unite";
+"grocery_add" = "Ajouter";
+"grocery_checked" = "Articles coches";
+"grocery_clear_checked" = "Supprimer les coches";
+
+/* Settings */
+"settings_title" = "Parametres";
+"settings_profile" = "Profil";
+"settings_family" = "Famille";
+"settings_family_name" = "Nom";
+"settings_members" = "Membres";
+"settings_invite_code" = "Code d'invitation";
+"settings_no_family" = "Aucune famille liee";
+"settings_language" = "Langue";
+"settings_sign_out" = "Se deconnecter";
+"settings_delete_account" = "Supprimer le compte";
+"settings_delete_confirm" = "Etes-vous sur de vouloir supprimer votre compte ? Cette action est irreversible.";
+"settings_delete" = "Supprimer";
+
+/* Common */
+"cancel" = "Annuler";
+"save" = "Enregistrer";
+"done" = "Termine";
+"back" = "Retour";
+"error_generic" = "Une erreur est survenue. Veuillez reessayer.";
+"error_invalid_code" = "Code d'invitation invalide. Veuillez verifier et reessayer.";
+"error_title_required" = "Le titre de la recette est obligatoire.";
+
+/* Nav aliases (for nav_* key pattern) */
+"nav_home" = "Accueil";
+"nav_recipes" = "Recettes";
+"nav_calendar" = "Calendrier";
+"nav_seasonal" = "Saison";
+"nav_grocery" = "Courses";
