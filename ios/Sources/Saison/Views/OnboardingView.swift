@@ -2,6 +2,7 @@ import SwiftUI
 
 struct OnboardingView: View {
     @EnvironmentObject var appVM: AppViewModel
+    @EnvironmentObject var loc: LocalizationManager
     let onComplete: () -> Void
 
     @State private var step: Step = .choice
@@ -44,7 +45,7 @@ struct OnboardingView: View {
 
     private var choiceView: some View {
         VStack(spacing: 16) {
-            Text(NSLocalizedString("onboarding_welcome", comment: ""))
+            Text(loc.t("onboarding_welcome"))
                 .font(Theme.ui(17))
                 .foregroundColor(Theme.inkMuted)
                 .multilineTextAlignment(.center)
@@ -52,7 +53,7 @@ struct OnboardingView: View {
             Button(action: { withAnimation { step = .create } }) {
                 HStack {
                     Image(systemName: "house.fill")
-                    Text(NSLocalizedString("onboarding_create_family", comment: ""))
+                    Text(loc.t("onboarding_create_family"))
                         .font(Theme.ui(16, weight: .medium))
                 }
                 .frame(maxWidth: .infinity)
@@ -65,7 +66,7 @@ struct OnboardingView: View {
             Button(action: { withAnimation { step = .join } }) {
                 HStack {
                     Image(systemName: "person.2.fill")
-                    Text(NSLocalizedString("onboarding_join_family", comment: ""))
+                    Text(loc.t("onboarding_join_family"))
                         .font(Theme.ui(16, weight: .medium))
                 }
                 .frame(maxWidth: .infinity)
@@ -83,11 +84,11 @@ struct OnboardingView: View {
 
     private var createView: some View {
         VStack(spacing: 20) {
-            Text(NSLocalizedString("onboarding_family_name", comment: ""))
+            Text(loc.t("onboarding_family_name"))
                 .font(Theme.ui(17, weight: .medium))
                 .foregroundColor(Theme.ink)
 
-            TextField(NSLocalizedString("onboarding_family_name_placeholder", comment: ""), text: $familyName)
+            TextField(loc.t("onboarding_family_name_placeholder"), text: $familyName)
                 .font(Theme.ui(16))
                 .foregroundColor(Theme.ink)
                 .tint(Theme.accent)
@@ -110,7 +111,7 @@ struct OnboardingView: View {
                     if isLoading {
                         ProgressView().tint(.white)
                     } else {
-                        Text(NSLocalizedString("onboarding_create", comment: ""))
+                        Text(loc.t("onboarding_create"))
                             .font(Theme.ui(16, weight: .medium))
                     }
                 }
@@ -128,11 +129,11 @@ struct OnboardingView: View {
 
     private var joinView: some View {
         VStack(spacing: 20) {
-            Text(NSLocalizedString("onboarding_enter_code", comment: ""))
+            Text(loc.t("onboarding_enter_code"))
                 .font(Theme.ui(17, weight: .medium))
                 .foregroundColor(Theme.ink)
 
-            TextField(NSLocalizedString("onboarding_code_placeholder", comment: ""), text: $inviteCode)
+            TextField(loc.t("onboarding_code_placeholder"), text: $inviteCode)
                 .font(Theme.ui(16))
                 .foregroundColor(Theme.ink)
                 .tint(Theme.accent)
@@ -156,7 +157,7 @@ struct OnboardingView: View {
                     if isLoading {
                         ProgressView().tint(.white)
                     } else {
-                        Text(NSLocalizedString("onboarding_join", comment: ""))
+                        Text(loc.t("onboarding_join"))
                             .font(Theme.ui(16, weight: .medium))
                     }
                 }
@@ -179,7 +180,7 @@ struct OnboardingView: View {
                 error = nil
             }
         }) {
-            Text(NSLocalizedString("back", comment: ""))
+            Text(loc.t("back"))
                 .font(Theme.ui(15))
                 .foregroundColor(Theme.inkMuted)
         }

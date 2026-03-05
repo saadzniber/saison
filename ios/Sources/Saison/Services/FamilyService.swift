@@ -25,7 +25,7 @@ class FamilyService: FirebaseService, ObservableObject {
             .getDocuments()
 
         guard let doc = snapshot.documents.first else {
-            throw NSError(domain: "FamilyService", code: 404, userInfo: [NSLocalizedDescriptionKey: NSLocalizedString("error_invalid_code", comment: "")])
+            throw NSError(domain: "FamilyService", code: 404, userInfo: [NSLocalizedDescriptionKey: LocalizationManager.shared.t("error_invalid_code")])
         }
 
         let familyId = doc.documentID

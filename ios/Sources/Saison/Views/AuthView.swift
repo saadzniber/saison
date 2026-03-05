@@ -5,6 +5,7 @@ import GoogleSignInSwift
 
 struct AuthView: View {
     @EnvironmentObject var appVM: AppViewModel
+    @EnvironmentObject var loc: LocalizationManager
     @State private var isLoading = false
     @State private var error: String?
 
@@ -23,7 +24,7 @@ struct AuthView: View {
                         .font(Theme.display(48, weight: .semibold))
                         .foregroundColor(Theme.ink)
 
-                    Text(NSLocalizedString("auth_tagline", comment: ""))
+                    Text(loc.t("auth_tagline"))
                         .font(Theme.ui(17))
                         .foregroundColor(Theme.inkMuted)
                         .multilineTextAlignment(.center)
@@ -50,7 +51,7 @@ struct AuthView: View {
                                 ProgressView()
                                     .tint(.white)
                             } else {
-                                Text(NSLocalizedString("auth_sign_in_google", comment: ""))
+                                Text(loc.t("auth_sign_in_google"))
                                     .font(Theme.ui(16, weight: .medium))
                             }
                         }
@@ -90,7 +91,7 @@ struct AuthView: View {
 
             guard let user = result?.user,
                   let idToken = user.idToken?.tokenString else {
-                self.error = NSLocalizedString("error_generic", comment: "")
+                self.error = loc.t("error_generic")
                 self.isLoading = false
                 return
             }

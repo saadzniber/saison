@@ -4,20 +4,22 @@ import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { useTranslation } from '@/lib/i18n';
-import { fetchMyRecipes, fetchCommunityRecipes, getStarredIds, fetchRecipesByIds } from '@/services/recipes';
+import { fetchCommunityRecipes, fetchFamilyRecipes, getStarredIds, fetchRecipesByIds } from '@/services/recipes';
 import { fetchCuisines } from '@/services/cuisine';
 import type { Recipe, Cuisine, Season } from '@/types';
 import { SEASONS } from '@/types';
 import { SkeletonBlock } from '@/components/layout/LoadingSpinner';
 
-type Tab = 'my' | 'starred' | 'community';
+type Tab = 'family' | 'starred' | 'community';
 
 function RecipeCard({
   recipe,
   starredIds,
+  showAuthor,
 }: {
   recipe: Recipe;
   starredIds: Set<string>;
+  showAuthor?: boolean;
 }) {
   const router = useRouter();
   const isStarred = starredIds.has(recipe.id);
@@ -52,6 +54,12 @@ function RecipeCard({
         </span>
         {isStarred && <span style={{ fontSize: 14, flexShrink: 0 }}>&#9733;</span>}
       </div>
+
+      {showAuthor && recipe.createdByName && (
+        <span style={{ fontFamily: 'var(--font-ui)', fontSize: 12, color: 'var(--color-ink-muted)' }}>
+          by {recipe.createdByName}
+        </span>
+      )}
 
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
         {recipe.cuisine && (
@@ -106,11 +114,11 @@ export default function RecipesScreen() {
   const { t, locale } = useTranslation();
   const router = useRouter();
 
-  const [tab, setTab] = useState<Tab>('my');
+  const [tab, setTab] = useState<Tab>('family');
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
 
-  const [myRecipes, setMyRecipes] = useState<Recipe[]>([]);
+  const [familyRecipes, setFamilyRecipes] = useState<Recipe[]>([]);
   const [starredRecipes, setStarredRecipes] = useState<Recipe[]>([]);
   const [communityRecipes, setCommunityRecipes] = useState<Recipe[]>([]);
   const [starredIds, setStarredIds] = useState<Set<string>>(new Set());
@@ -127,11 +135,16 @@ export default function RecipesScreen() {
     if (!user) return;
     setLoading(true);
 
-    if (tab === 'my') {
-      fetchMyRecipes(user.uid)
-        .then(setMyRecipes)
-        .catch(console.error)
-        .finally(() => setLoading(false));
+    if (tab === 'family') {
+      if (!user.familyId) {
+        setFamilyRecipes([]);
+        setLoading(false);
+      } else {
+        fetchFamilyRecipes(user.familyId)
+          .then(setFamilyRecipes)
+          .catch(console.error)
+          .finally(() => setLoading(false));
+      }
     } else if (tab === 'starred') {
       getStarredIds(user.uid)
         .then((ids) => {
@@ -160,7 +173,7 @@ export default function RecipesScreen() {
       .catch(console.error);
   }, [user]);
 
-  const recipes = tab === 'my' ? myRecipes : tab === 'starred' ? starredRecipes : communityRecipes;
+  const recipes = tab === 'family' ? familyRecipes : tab === 'starred' ? starredRecipes : communityRecipes;
 
   const filtered = useMemo(() => {
     if (!search.trim()) return recipes;
@@ -169,13 +182,13 @@ export default function RecipesScreen() {
   }, [recipes, search]);
 
   const tabs: { key: Tab; label: string }[] = [
-    { key: 'my', label: t('recipe_my') },
+    { key: 'family', label: t('recipe_family') },
     { key: 'starred', label: t('recipe_starred') },
     { key: 'community', label: t('recipe_community') },
   ];
 
   const emptyKeys: Record<Tab, string> = {
-    my: 'recipe_empty_my',
+    family: 'recipe_empty_family',
     starred: 'recipe_empty_starred',
     community: 'recipe_empty_community',
   };
@@ -295,30 +308,11 @@ export default function RecipesScreen() {
           }}
         >
           <p>{t(emptyKeys[tab])}</p>
-          {tab === 'my' && (
-            <button
-              onClick={() => router.push('/recipes/new')}
-              style={{
-                marginTop: 16,
-                padding: '10px 24px',
-                borderRadius: 'var(--radius-full)',
-                background: 'var(--color-accent)',
-                color: '#fff',
-                border: 'none',
-                cursor: 'pointer',
-                fontFamily: 'var(--font-ui)',
-                fontWeight: 600,
-                fontSize: 14,
-              }}
-            >
-              + {t('recipe_new')}
-            </button>
-          )}
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {filtered.map((recipe) => (
-            <RecipeCard key={recipe.id} recipe={recipe} starredIds={starredIds} />
+            <RecipeCard key={recipe.id} recipe={recipe} starredIds={starredIds} showAuthor={tab === 'family' || tab === 'community'} />
           ))}
         </div>
       )}

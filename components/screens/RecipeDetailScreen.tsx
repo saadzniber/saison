@@ -9,13 +9,16 @@ import {
   toggleStarRecipe,
   rateRecipe,
   getUserRating,
+  deleteRecipe,
 } from '@/services/recipes';
 import { addToCalendar } from '@/services/calendar';
 import { addToGrocery } from '@/services/grocery';
 import { logActivity } from '@/services/activity';
+import { logMealProduce } from '@/services/diversity';
 import type { Recipe, MealType } from '@/types';
-import { MEAL_TYPES, getWeekDates } from '@/types';
+import { MEAL_TYPES, getWeekDates, getWeekId } from '@/types';
 import { PageLoader } from '@/components/layout/LoadingSpinner';
+import { fullDate } from '@/lib/dates';
 
 export default function RecipeDetailScreen({ recipeId }: { recipeId: string }) {
   const { user } = useAuth();
@@ -37,6 +40,7 @@ export default function RecipeDetailScreen({ recipeId }: { recipeId: string }) {
   const [calLoading, setCalLoading] = useState(false);
   const [groceryLoading, setGroceryLoading] = useState(false);
   const [groceryAdded, setGroceryAdded] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const isOwner = user?.uid === recipe?.createdBy;
   const weekDays = getWeekDates(0);
@@ -101,6 +105,12 @@ export default function RecipeDetailScreen({ recipeId }: { recipeId: string }) {
         addedBy: user.uid,
         addedByName: user.name,
       });
+      // Update plant diversity count
+      if (recipe.produce && recipe.produce.length > 0) {
+        const mealDate = new Date(selectedDay + 'T12:00:00');
+        const weekId = getWeekId(mealDate);
+        logMealProduce(user.familyId, weekId, recipe.produce).catch(() => {});
+      }
       await logActivity(user.familyId, {
         userId: user.uid,
         userName: user.name,
@@ -141,6 +151,19 @@ export default function RecipeDetailScreen({ recipeId }: { recipeId: string }) {
       console.error(e);
     } finally {
       setGroceryLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!user || !recipe || deleteLoading) return;
+    if (!window.confirm(t('recipe_delete_confirm'))) return;
+    setDeleteLoading(true);
+    try {
+      await deleteRecipe(recipe.id, user.uid);
+      router.push('/recipes');
+    } catch (e) {
+      console.error(e);
+      setDeleteLoading(false);
     }
   };
 
@@ -187,11 +210,16 @@ export default function RecipeDetailScreen({ recipeId }: { recipeId: string }) {
       </h1>
 
       {/* Meta chips */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
         {recipe.cuisine && <Chip>{recipe.cuisine}</Chip>}
         <Chip>{recipe.prepTime}min</Chip>
         <Chip>{recipe.servings} {t('recipe_servings').toLowerCase()}</Chip>
         <Chip>{recipe.plants} {t('recipe_plants').toLowerCase()}</Chip>
+        {recipe.createdAt && (
+          <span style={{ fontFamily: 'var(--font-ui)', fontSize: 12, color: 'var(--color-ink-faint)' }}>
+            {recipe.createdByName ? `by ${recipe.createdByName} · ` : ''}{fullDate(recipe.createdAt instanceof Date ? recipe.createdAt : new Date(recipe.createdAt))}
+          </span>
+        )}
       </div>
 
       {/* Season badges */}
@@ -264,10 +292,14 @@ export default function RecipeDetailScreen({ recipeId }: { recipeId: string }) {
           </ActionButton>
         )}
         {isOwner && (
-          <ActionButton onClick={() => router.push(`/recipes/new?edit=${recipe.id}`)}>
-
-            {t('recipe_edit')}
-          </ActionButton>
+          <>
+            <ActionButton onClick={() => router.push(`/recipes/new?edit=${recipe.id}`)}>
+              {t('recipe_edit')}
+            </ActionButton>
+            <ActionButton onClick={handleDelete} loading={deleteLoading} danger>
+              {t('recipe_delete')}
+            </ActionButton>
+          </>
         )}
       </div>
 
@@ -288,6 +320,19 @@ export default function RecipeDetailScreen({ recipeId }: { recipeId: string }) {
           ))}
         </ul>
       </Section>
+
+      {/* Steps */}
+      {recipe.steps && recipe.steps.length > 0 && (
+        <Section title={t('recipe_steps')}>
+          <ol style={{ margin: 0, padding: '0 0 0 22px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {recipe.steps.map((step, i) => (
+              <li key={i} style={{ fontFamily: 'var(--font-ui)', fontSize: 14, color: 'var(--color-ink)', lineHeight: 1.6 }}>
+                {step}
+              </li>
+            ))}
+          </ol>
+        </Section>
+      )}
 
       {/* Produce */}
       {recipe.produce.length > 0 && (
@@ -492,12 +537,14 @@ function ActionButton({
   loading,
   disabled,
   accent,
+  danger,
 }: {
   children: React.ReactNode;
   onClick?: () => void;
   loading?: boolean;
   disabled?: boolean;
   accent?: boolean;
+  danger?: boolean;
 }) {
   return (
     <button
@@ -506,9 +553,9 @@ function ActionButton({
       style={{
         padding: '10px 20px',
         borderRadius: 'var(--radius-md)',
-        border: accent ? 'none' : '1px solid var(--color-border)',
-        background: accent ? 'var(--color-accent)' : 'var(--color-surface)',
-        color: accent ? '#fff' : 'var(--color-ink)',
+        border: danger ? '1px solid var(--color-error, #c00)' : accent ? 'none' : '1px solid var(--color-border)',
+        background: danger ? 'transparent' : accent ? 'var(--color-accent)' : 'var(--color-surface)',
+        color: danger ? 'var(--color-error, #c00)' : accent ? '#fff' : 'var(--color-ink)',
         fontFamily: 'var(--font-ui)',
         fontSize: 14,
         fontWeight: 600,

@@ -19,6 +19,7 @@ struct ContentView: View {
         }
         .animation(.easeInOut(duration: 0.3), value: appVM.isLoading)
         .animation(.easeInOut(duration: 0.3), value: appVM.isSignedIn)
+        .preferredColorScheme(.light)
     }
 
     private var loadingView: some View {

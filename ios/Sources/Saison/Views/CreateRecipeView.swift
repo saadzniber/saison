@@ -2,6 +2,7 @@ import SwiftUI
 
 struct CreateRecipeView: View {
     @EnvironmentObject var appVM: AppViewModel
+    @EnvironmentObject var loc: LocalizationManager
     @Environment(\.dismiss) var dismiss
 
     var editRecipe: Recipe?
@@ -35,12 +36,12 @@ struct CreateRecipeView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section(header: Text(NSLocalizedString("create_basic_info", comment: ""))) {
-                    TextField(NSLocalizedString("create_title", comment: ""), text: $title)
-                    TextField(NSLocalizedString("create_description", comment: ""), text: $description, axis: .vertical)
+                Section(header: Text(loc.t("create_basic_info")).foregroundColor(Theme.inkMuted)) {
+                    TextField(loc.t("create_title"), text: $title)
+                    TextField(loc.t("create_description"), text: $description, axis: .vertical)
                         .lineLimit(3...6)
                     HStack {
-                        Text(NSLocalizedString("create_servings", comment: ""))
+                        Text(loc.t("create_servings"))
                         Spacer()
                         TextField("4", text: $servings)
                             .keyboardType(.numberPad)
@@ -48,111 +49,137 @@ struct CreateRecipeView: View {
                             .multilineTextAlignment(.trailing)
                     }
                     HStack {
-                        Text(NSLocalizedString("create_prep_time", comment: ""))
+                        Text(loc.t("create_prep_time"))
                         Spacer()
                         TextField("15", text: $prepMinutes)
                             .keyboardType(.numberPad)
                             .frame(width: 60)
                             .multilineTextAlignment(.trailing)
-                        Text("min")
+                        Text(loc.t("unit_minutes"))
                     }
                     HStack {
-                        Text(NSLocalizedString("create_cook_time", comment: ""))
+                        Text(loc.t("create_cook_time"))
                         Spacer()
                         TextField("30", text: $cookMinutes)
                             .keyboardType(.numberPad)
                             .frame(width: 60)
                             .multilineTextAlignment(.trailing)
-                        Text("min")
+                        Text(loc.t("unit_minutes"))
                     }
                 }
+                .listRowBackground(Theme.surface)
 
-                Section(header: Text(NSLocalizedString("create_cuisine", comment: ""))) {
-                    TextField(NSLocalizedString("create_cuisine_id", comment: ""), text: $cuisineId)
-                    Toggle(NSLocalizedString("create_public", comment: ""), isOn: $isPublic)
+                Section(header: Text(loc.t("create_cuisine")).foregroundColor(Theme.inkMuted)) {
+                    Picker(loc.t("create_cuisine"), selection: $cuisineId) {
+                        Text(loc.t("create_cuisine_none")).tag("")
+                        ForEach(CuisineOption.all) { cuisine in
+                            Text("\(cuisine.emoji) \(cuisine.label)").tag(cuisine.id)
+                        }
+                    }
+
+                    Toggle(loc.t("create_public"), isOn: $isPublic)
                 }
+                .listRowBackground(Theme.surface)
 
-                Section(header: Text(NSLocalizedString("create_seasons_label", comment: ""))) {
-                    ForEach(Season.allCases) { season in
-                        Button(action: {
-                            if selectedSeasons.contains(season) {
-                                selectedSeasons.remove(season)
-                            } else {
-                                selectedSeasons.insert(season)
-                            }
-                        }) {
-                            HStack {
-                                Text("\(season.emoji) \(season.label)")
-                                    .foregroundColor(Theme.ink)
-                                Spacer()
+                Section(header: Text(loc.t("create_seasons_label")).foregroundColor(Theme.inkMuted)) {
+                    FlowLayout(spacing: 8) {
+                        ForEach(Season.allCases) { season in
+                            Button(action: {
                                 if selectedSeasons.contains(season) {
-                                    Image(systemName: "checkmark")
-                                        .foregroundColor(Theme.accent)
+                                    selectedSeasons.remove(season)
+                                } else {
+                                    selectedSeasons.insert(season)
                                 }
+                            }) {
+                                HStack(spacing: 5) {
+                                    Text(season.emoji)
+                                        .font(.system(size: 14))
+                                    Text(season.label)
+                                        .font(Theme.ui(13, weight: selectedSeasons.contains(season) ? .semibold : .regular))
+                                }
+                                .padding(.horizontal, 14)
+                                .padding(.vertical, 7)
+                                .background(selectedSeasons.contains(season) ? Theme.accent : Theme.surface)
+                                .foregroundColor(selectedSeasons.contains(season) ? .white : Theme.ink)
+                                .cornerRadius(20)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 20)
+                                        .stroke(selectedSeasons.contains(season) ? Theme.accent : Theme.border, lineWidth: selectedSeasons.contains(season) ? 1.5 : 1)
+                                )
                             }
                         }
                     }
+                    .padding(.vertical, 4)
                 }
+                .listRowBackground(Theme.surface)
 
-                Section(header: Text(NSLocalizedString("create_meal_types", comment: ""))) {
-                    ForEach(MealType.allCases) { mt in
-                        Button(action: {
-                            if selectedMealTypes.contains(mt) {
-                                selectedMealTypes.remove(mt)
-                            } else {
-                                selectedMealTypes.insert(mt)
-                            }
-                        }) {
-                            HStack {
-                                Text(mt.label)
-                                    .foregroundColor(Theme.ink)
-                                Spacer()
+                Section(header: Text(loc.t("create_meal_types")).foregroundColor(Theme.inkMuted)) {
+                    FlowLayout(spacing: 8) {
+                        ForEach(MealType.allCases) { mt in
+                            Button(action: {
                                 if selectedMealTypes.contains(mt) {
-                                    Image(systemName: "checkmark")
-                                        .foregroundColor(Theme.accent)
+                                    selectedMealTypes.remove(mt)
+                                } else {
+                                    selectedMealTypes.insert(mt)
                                 }
+                            }) {
+                                Text(mt.label)
+                                    .font(Theme.ui(13, weight: selectedMealTypes.contains(mt) ? .semibold : .regular))
+                                    .padding(.horizontal, 14)
+                                    .padding(.vertical, 7)
+                                    .background(selectedMealTypes.contains(mt) ? Theme.accent : Theme.surface)
+                                    .foregroundColor(selectedMealTypes.contains(mt) ? .white : Theme.ink)
+                                    .cornerRadius(20)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 20)
+                                            .stroke(selectedMealTypes.contains(mt) ? Theme.accent : Theme.border, lineWidth: selectedMealTypes.contains(mt) ? 1.5 : 1)
+                                    )
                             }
                         }
                     }
+                    .padding(.vertical, 4)
                 }
+                .listRowBackground(Theme.surface)
 
-                Section(header: Text(NSLocalizedString("recipe_ingredients", comment: ""))) {
+                Section(header: Text(loc.t("recipe_ingredients")).foregroundColor(Theme.inkMuted)) {
                     ForEach(ingredients.indices, id: \.self) { index in
                         VStack(spacing: 8) {
                             HStack {
-                                TextField(NSLocalizedString("create_ingredient_name", comment: ""), text: $ingredients[index].name)
-                                TextField(NSLocalizedString("create_ingredient_qty", comment: ""), text: $ingredients[index].quantity)
+                                TextField(loc.t("create_ingredient_name"), text: $ingredients[index].name)
+                                TextField(loc.t("create_ingredient_qty"), text: $ingredients[index].quantity)
                                     .frame(width: 60)
                                     .keyboardType(.decimalPad)
-                                TextField(NSLocalizedString("create_ingredient_unit", comment: ""), text: $ingredients[index].unit)
+                                TextField(loc.t("create_ingredient_unit"), text: $ingredients[index].unit)
                                     .frame(width: 60)
                             }
-                            Toggle(NSLocalizedString("create_is_produce", comment: ""), isOn: $ingredients[index].isProduce)
+                            Toggle(loc.t("create_is_produce"), isOn: $ingredients[index].isProduce)
                                 .font(Theme.ui(13))
                         }
                         .padding(.vertical, 4)
                     }
                     Button(action: { ingredients.append(IngredientInput()) }) {
-                        Label(NSLocalizedString("create_add_ingredient", comment: ""), systemImage: "plus.circle")
+                        Label(loc.t("create_add_ingredient"), systemImage: "plus.circle")
                     }
                 }
+                .listRowBackground(Theme.surface)
 
-                Section(header: Text(NSLocalizedString("recipe_instructions", comment: ""))) {
+                Section(header: Text(loc.t("recipe_instructions")).foregroundColor(Theme.inkMuted)) {
                     ForEach(instructions.indices, id: \.self) { index in
                         HStack {
                             Text("\(index + 1).")
                                 .foregroundColor(Theme.inkMuted)
-                            TextField(NSLocalizedString("create_step", comment: ""), text: $instructions[index], axis: .vertical)
+                            TextField(loc.t("create_step"), text: $instructions[index], axis: .vertical)
                         }
                     }
                     Button(action: { instructions.append("") }) {
-                        Label(NSLocalizedString("create_add_step", comment: ""), systemImage: "plus.circle")
+                        Label(loc.t("create_add_step"), systemImage: "plus.circle")
                     }
                 }
+                .listRowBackground(Theme.surface)
 
-                Section(header: Text(NSLocalizedString("create_produce_tags", comment: ""))) {
+                Section(header: Text(loc.t("create_produce_tags")).foregroundColor(Theme.inkMuted)) {
                     HStack {
-                        TextField(NSLocalizedString("create_produce_placeholder", comment: ""), text: $produceText)
+                        TextField(loc.t("create_produce_placeholder"), text: $produceText)
                             .onSubmit {
                                 let tag = produceText.trimmingCharacters(in: .whitespaces)
                                 if !tag.isEmpty && !produceTags.contains(tag) {
@@ -192,6 +219,7 @@ struct CreateRecipeView: View {
                         }
                     }
                 }
+                .listRowBackground(Theme.surface)
 
                 if let error {
                     Section {
@@ -199,22 +227,23 @@ struct CreateRecipeView: View {
                             .foregroundColor(Theme.error)
                             .font(Theme.ui(14))
                     }
+                    .listRowBackground(Theme.surface)
                 }
             }
             .scrollContentBackground(.hidden)
             .background(Theme.bg.ignoresSafeArea())
-            .navigationTitle(isEditing ? NSLocalizedString("create_edit_title", comment: "") : NSLocalizedString("create_new_title", comment: ""))
+            .navigationTitle(isEditing ? loc.t("create_edit_title") : loc.t("create_new_title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(NSLocalizedString("cancel", comment: "")) { dismiss() }
+                    Button(loc.t("cancel")) { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button(action: handleSave) {
                         if isLoading {
                             ProgressView()
                         } else {
-                            Text(NSLocalizedString("save", comment: ""))
+                            Text(loc.t("save"))
                         }
                     }
                     .disabled(title.trimmingCharacters(in: .whitespaces).isEmpty || isLoading)
@@ -245,7 +274,7 @@ struct CreateRecipeView: View {
     private func handleSave() {
         let trimmedTitle = title.trimmingCharacters(in: .whitespaces)
         guard !trimmedTitle.isEmpty else {
-            error = NSLocalizedString("error_title_required", comment: "")
+            error = loc.t("error_title_required")
             return
         }
 
@@ -286,7 +315,7 @@ struct CreateRecipeView: View {
             if result != nil {
                 dismiss()
             } else {
-                error = appVM.errorMessage ?? NSLocalizedString("error_generic", comment: "")
+                error = appVM.errorMessage ?? loc.t("error_generic")
                 appVM.errorMessage = nil
             }
         }

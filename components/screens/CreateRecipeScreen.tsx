@@ -268,6 +268,7 @@ function CreateRecipeForm() {
     { name: '', amount: '', unit: '' },
   ]);
   const [produceIds, setProduceIds] = useState<string[]>([]);
+  const [steps, setSteps] = useState<string[]>(['']);
   const [isPublic, setIsPublic] = useState(false);
 
   /* Load cuisines */
@@ -298,6 +299,7 @@ function CreateRecipeForm() {
           .filter((p) => recipe.produce.includes(getProduceName(p, 'en')))
           .map((p) => p.id);
         setProduceIds(ids);
+        setSteps(recipe.steps && recipe.steps.length > 0 ? recipe.steps : ['']);
         setIsPublic(recipe.isPublic || false);
       })
       .catch(() => {})
@@ -318,6 +320,30 @@ function CreateRecipeForm() {
   const removeIngredient = (idx: number) => {
     if (ingredients.length <= 1) return;
     setIngredients((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  /* Step helpers */
+  const updateStep = (idx: number, value: string) => {
+    setSteps((prev) => prev.map((s, i) => (i === idx ? value : s)));
+  };
+
+  const addStep = () => {
+    setSteps((prev) => [...prev, '']);
+  };
+
+  const removeStep = (idx: number) => {
+    if (steps.length <= 1) return;
+    setSteps((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  const moveStep = (idx: number, direction: -1 | 1) => {
+    const newIdx = idx + direction;
+    if (newIdx < 0 || newIdx >= steps.length) return;
+    setSteps((prev) => {
+      const arr = [...prev];
+      [arr[idx], arr[newIdx]] = [arr[newIdx], arr[idx]];
+      return arr;
+    });
   };
 
   /* Season toggle */
@@ -346,6 +372,7 @@ function CreateRecipeForm() {
     setErrors({});
 
     const validIngredients = ingredients.filter((ing) => ing.name.trim());
+    const validSteps = steps.filter((s) => s.trim());
     const produceNames = PRODUCE_CATALOGUE.filter((p) => produceIds.includes(p.id)).map(
       (p) => getProduceName(p, 'en')
     );
@@ -360,6 +387,7 @@ function CreateRecipeForm() {
           prepTime,
           servings,
           ingredients: validIngredients,
+          steps: validSteps,
           produce: produceNames,
           plants: produceIds.length,
           isPublic,
@@ -374,6 +402,7 @@ function CreateRecipeForm() {
             prepTime,
             servings,
             ingredients: validIngredients,
+            steps: validSteps,
             produce: produceNames,
             plants: produceIds.length,
             isPublic,
@@ -381,7 +410,8 @@ function CreateRecipeForm() {
             createdByName: user.name,
           },
           user.uid,
-          user.name
+          user.name,
+          user.familyId
         );
 
         if (user.familyId) {
@@ -682,6 +712,112 @@ function CreateRecipeForm() {
                 <line x1="5" y1="12" x2="19" y2="12" />
               </svg>
               {t('create_add_ingredient')}
+            </button>
+          </div>
+        </FormSection>
+
+        {/* ── Steps ──────────────────────────────── */}
+        <FormSection title={t('create_steps')}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {steps.map((step, i) => (
+              <div key={i} style={{ display: 'flex', gap: 6, alignItems: 'flex-start' }}>
+                <span
+                  style={{
+                    fontFamily: 'var(--font-ui)',
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: 'var(--color-ink-faint)',
+                    minWidth: 24,
+                    textAlign: 'center',
+                    paddingTop: 10,
+                    flexShrink: 0,
+                  }}
+                >
+                  {i + 1}
+                </span>
+                <textarea
+                  value={step}
+                  onChange={(e) => updateStep(i, e.target.value)}
+                  rows={2}
+                  placeholder={`Step ${i + 1}`}
+                  style={{ ...inputStyle, flex: 1, resize: 'vertical', lineHeight: 1.5 }}
+                />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 2, flexShrink: 0 }}>
+                  <button
+                    type="button"
+                    onClick={() => moveStep(i, -1)}
+                    disabled={i === 0}
+                    aria-label="Move step up"
+                    style={{
+                      width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      background: 'none', border: 'none', cursor: i === 0 ? 'default' : 'pointer',
+                      opacity: i === 0 ? 0.2 : 0.6, padding: 0, color: 'var(--color-ink)',
+                    }}
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="18 15 12 9 6 15" />
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => moveStep(i, 1)}
+                    disabled={i === steps.length - 1}
+                    aria-label="Move step down"
+                    style={{
+                      width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      background: 'none', border: 'none', cursor: i === steps.length - 1 ? 'default' : 'pointer',
+                      opacity: i === steps.length - 1 ? 0.2 : 0.6, padding: 0, color: 'var(--color-ink)',
+                    }}
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="6 9 12 15 18 9" />
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => removeStep(i)}
+                    disabled={steps.length <= 1}
+                    aria-label="Remove step"
+                    style={{
+                      width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      background: 'none', border: 'none',
+                      cursor: steps.length <= 1 ? 'default' : 'pointer',
+                      opacity: steps.length <= 1 ? 0.2 : 0.6, padding: 0, color: 'var(--color-error)',
+                    }}
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            ))}
+
+            <button
+              type="button"
+              onClick={addStep}
+              style={{
+                alignSelf: 'flex-start',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+                padding: '7px 14px',
+                fontSize: 13,
+                fontFamily: 'var(--font-ui)',
+                fontWeight: 500,
+                borderRadius: 'var(--radius-sm)',
+                border: '1.5px dashed var(--color-border)',
+                background: 'transparent',
+                color: 'var(--color-accent)',
+                cursor: 'pointer',
+              }}
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              {t('create_add_step')}
             </button>
           </div>
         </FormSection>

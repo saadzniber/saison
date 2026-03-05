@@ -17,10 +17,22 @@
 /* Home */
 "home_diversity_title" = "Plant diversity this week";
 "home_plants_this_week" = "unique plants this week";
+"home_this_week" = "This Week";
+"home_todays_meals" = "Today's Meals";
+"home_tomorrow_preview" = "Tomorrow";
+"home_plan_meal" = "Plan a meal";
 "home_upcoming" = "Upcoming meals";
 "home_no_upcoming" = "No meals planned yet";
+"home_family_activity" = "Family Activity";
 "home_activity" = "Recent activity";
 "home_no_activity" = "No recent activity";
+
+/* Activity messages */
+"activity_recipe_created" = "created \"%@\"";
+"activity_recipe_saved" = "saved \"%@\"";
+"activity_calendar_added" = "planned %@: \"%@\"";
+"activity_grocery_added" = "added items to grocery list";
+"activity_member_joined" = "joined the family";
 
 /* Diversity info */
 "diversity_info_title" = "The 30-plant challenge";
@@ -49,7 +61,8 @@
 "season_winter" = "Winter";
 
 /* Recipes */
-"recipes_my" = "My recipes";
+"recipes_my" = "Mine";
+"recipes_family" = "Family";
 "recipes_starred" = "Starred";
 "recipes_community" = "Community";
 "recipes_search" = "Search recipes...";
@@ -64,6 +77,7 @@
 "recipe_instructions" = "Instructions";
 "recipe_add_to_calendar" = "Add to calendar";
 "recipe_add_to_grocery" = "Add ingredients to grocery list";
+"recipe_added_to_grocery" = "Added to grocery list";
 "recipe_select_date" = "Select date";
 "recipe_meal_type" = "Meal type";
 "recipe_confirm_add" = "Add to calendar";
@@ -78,6 +92,7 @@
 "create_prep_time" = "Prep time";
 "create_cook_time" = "Cook time";
 "create_cuisine" = "Cuisine";
+"create_cuisine_none" = "Select cuisine";
 "create_cuisine_id" = "Cuisine (e.g. french, italian)";
 "create_public" = "Share with community";
 "create_seasons_label" = "Seasons";
@@ -94,6 +109,11 @@
 
 /* Calendar */
 "calendar_pick_recipe" = "Choose a recipe";
+"calendar_recipe_unavailable" = "Recipe details are not available.";
+"calendar_view_recipe" = "View Recipe";
+"calendar_remove" = "Remove";
+"calendar_last_cooked" = "Last: %@";
+"calendar_never_cooked" = "Never cooked";
 
 /* Grocery */
 "grocery_empty" = "Your grocery list is empty";
@@ -108,6 +128,7 @@
 /* Settings */
 "settings_title" = "Settings";
 "settings_profile" = "Profile";
+"settings_display_name" = "Display name";
 "settings_family" = "Family";
 "settings_family_name" = "Name";
 "settings_members" = "Members";
@@ -119,14 +140,47 @@
 "settings_delete_confirm" = "Are you sure you want to delete your account? This cannot be undone.";
 "settings_delete" = "Delete";
 
+/* Dates & Time */
+"date_today" = "Today";
+"date_tomorrow" = "Tomorrow";
+"date_yesterday" = "Yesterday";
+"time_just_now" = "Just now";
+"time_minutes_ago" = "%dm ago";
+"time_hours_ago" = "%dh ago";
+"time_yesterday" = "Yesterday";
+"time_days_ago" = "%d days ago";
+
+/* Grocery - shared */
+"grocery_you" = "You";
+
+/* Recipe delete */
+"recipe_delete_title" = "Delete Recipe";
+"recipe_delete_confirm" = "Are you sure you want to delete this recipe?";
+
+/* Units */
+"unit_minutes" = "min";
+
+/* Language names */
+"lang_english" = "English";
+"lang_french" = "Français";
+
 /* Common */
 "cancel" = "Cancel";
+"delete" = "Delete";
 "save" = "Save";
 "done" = "Done";
 "back" = "Back";
 "error_generic" = "Something went wrong. Please try again.";
 "error_invalid_code" = "Invalid invite code. Please check and try again.";
 "error_title_required" = "Recipe title is required.";
+
+/* Produce types */
+"produce_vegetable" = "Vegetable";
+"produce_fruit" = "Fruit";
+"produce_herb" = "Herb";
+"produce_grain" = "Grain";
+"produce_legume" = "Legume";
+"produce_nut" = "Nut";
 
 /* Nav aliases (for nav_* key pattern) */
 "nav_home" = "Home";

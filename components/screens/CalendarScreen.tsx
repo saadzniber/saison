@@ -4,10 +4,10 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
 import { useTranslation } from '@/lib/i18n';
-import { getWeekCalendar, addToCalendar, removeFromCalendar } from '@/services/calendar';
-import { fetchMyRecipes } from '@/services/recipes';
+import { listenToWeekCalendar, addToCalendar, removeFromCalendar, fetchAllCalendarEntries } from '@/services/calendar';
+import { fetchFamilyRecipes, fetchCommunityRecipes, getStarredIds, fetchRecipesByIds } from '@/services/recipes';
 import { logActivity } from '@/services/activity';
-import { logMealProduce } from '@/services/diversity';
+import { logMealProduce, recalculateWeekDiversity } from '@/services/diversity';
 import type { CalendarEntry, Recipe, MealType } from '@/types';
 import { MEAL_TYPES, getWeekDates, getWeekId } from '@/types';
 import { SkeletonBlock } from '@/components/layout/LoadingSpinner';
@@ -244,37 +244,57 @@ function MealPopover({ entry, anchorRect, onClose, onRemove, removing, t }: Meal
   );
 }
 
+type PickerTab = 'family' | 'starred' | 'community';
+
 interface RecipePickerSheetProps {
   mealType: MealType;
   date: string;
-  recipes: Recipe[];
+  familyRecipes: Recipe[];
+  starredRecipes: Recipe[];
+  communityRecipes: Recipe[];
+  lastCookedMap: Map<string, string>;
   loading: boolean;
-  search: string;
-  onSearchChange: (v: string) => void;
   onPick: (recipe: Recipe) => void;
   onClose: () => void;
   adding: boolean;
-  t: (key: string) => string;
+  t: (key: string, params?: Record<string, string | number>) => string;
 }
 
 function RecipePickerSheet({
   mealType,
   date,
-  recipes,
+  familyRecipes,
+  starredRecipes,
+  communityRecipes,
+  lastCookedMap,
   loading,
-  search,
-  onSearchChange,
   onPick,
   onClose,
   adding,
   t,
 }: RecipePickerSheetProps) {
+  const [pickerTab, setPickerTab] = useState<PickerTab>('family');
+  const [search, setSearch] = useState('');
+
   const dateLabel = formatShortDate(date);
   const mealLabel = t(`calendar_${mealType}` as Parameters<typeof t>[0]);
 
+  const tabRecipes = pickerTab === 'family' ? familyRecipes : pickerTab === 'starred' ? starredRecipes : communityRecipes;
   const filtered = search.trim()
-    ? recipes.filter((r) => r.name.toLowerCase().includes(search.toLowerCase()))
-    : recipes;
+    ? tabRecipes.filter((r) => r.name.toLowerCase().includes(search.toLowerCase()))
+    : tabRecipes;
+
+  const pickerTabs: { key: PickerTab; label: string }[] = [
+    { key: 'family', label: t('recipe_family') },
+    { key: 'starred', label: t('recipe_starred') },
+    { key: 'community', label: t('recipe_community') },
+  ];
+
+  const emptyKeys: Record<PickerTab, string> = {
+    family: 'recipe_empty_family',
+    starred: 'recipe_empty_starred',
+    community: 'recipe_empty_community',
+  };
 
   return (
     <>
@@ -294,7 +314,7 @@ function RecipePickerSheet({
       <div
         role="dialog"
         aria-modal="true"
-        aria-label={t('calendar_add')}
+        aria-label={t('calendar_pick_recipe')}
         style={{
           position: 'fixed',
           bottom: 0,
@@ -341,7 +361,7 @@ function RecipePickerSheet({
                   lineHeight: 1.2,
                 }}
               >
-                {t('calendar_add')}
+                {t('calendar_pick_recipe')}
               </h3>
               <p
                 style={{
@@ -377,10 +397,44 @@ function RecipePickerSheet({
             </button>
           </div>
 
+          {/* Tabs */}
+          <div
+            style={{
+              display: 'flex',
+              gap: 0,
+              marginTop: 12,
+              background: 'var(--color-bg)',
+              borderRadius: 'var(--radius-sm)',
+              border: '1px solid var(--color-border)',
+              overflow: 'hidden',
+            }}
+          >
+            {pickerTabs.map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => setPickerTab(tab.key)}
+                style={{
+                  flex: 1,
+                  padding: '7px 0',
+                  fontSize: 13,
+                  fontFamily: 'var(--font-ui)',
+                  fontWeight: pickerTab === tab.key ? 600 : 400,
+                  background: pickerTab === tab.key ? 'var(--color-accent)' : 'transparent',
+                  color: pickerTab === tab.key ? '#fff' : 'var(--color-ink)',
+                  border: 'none',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s',
+                }}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
           {/* Search */}
           <div
             style={{
-              marginTop: 12,
+              marginTop: 10,
               display: 'flex',
               alignItems: 'center',
               gap: 8,
@@ -398,7 +452,7 @@ function RecipePickerSheet({
               type="text"
               placeholder={t('recipe_search')}
               value={search}
-              onChange={(e) => onSearchChange(e.target.value)}
+              onChange={(e) => setSearch(e.target.value)}
               autoFocus
               style={{
                 flex: 1,
@@ -413,7 +467,7 @@ function RecipePickerSheet({
             />
             {search && (
               <button
-                onClick={() => onSearchChange('')}
+                onClick={() => setSearch('')}
                 style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2 }}
                 aria-label="Clear search"
               >
@@ -444,78 +498,95 @@ function RecipePickerSheet({
                 color: 'var(--color-ink-muted)',
               }}
             >
-              {search ? 'No recipes match your search.' : t('recipe_empty_my')}
+              {search ? 'No recipes match your search.' : t(emptyKeys[pickerTab])}
             </div>
           ) : (
             <div style={{ padding: '4px 12px 16px' }}>
-              {filtered.map((recipe) => (
-                <button
-                  key={recipe.id}
-                  onClick={() => !adding && onPick(recipe)}
-                  disabled={adding}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    width: '100%',
-                    padding: '12px 12px',
-                    background: 'none',
-                    border: 'none',
-                    borderRadius: 'var(--radius-sm)',
-                    cursor: adding ? 'not-allowed' : 'pointer',
-                    textAlign: 'left',
-                    gap: 12,
-                    transition: 'background 0.1s',
-                  }}
-                  onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLButtonElement).style.background = 'var(--color-surface-raised)';
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
-                  }}
-                >
-                  <span
+              {filtered.map((recipe) => {
+                const lastDate = lastCookedMap.get(recipe.id);
+                return (
+                  <button
+                    key={recipe.id}
+                    onClick={() => !adding && onPick(recipe)}
+                    disabled={adding}
                     style={{
-                      fontFamily: 'var(--font-ui)',
-                      fontSize: 14,
-                      fontWeight: 500,
-                      color: 'var(--color-ink)',
-                      flex: 1,
-                      lineHeight: 1.3,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      width: '100%',
+                      padding: '12px 12px',
+                      background: 'none',
+                      border: 'none',
+                      borderRadius: 'var(--radius-sm)',
+                      cursor: adding ? 'not-allowed' : 'pointer',
+                      textAlign: 'left',
+                      gap: 12,
+                      transition: 'background 0.1s',
+                    }}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLButtonElement).style.background = 'var(--color-surface-raised)';
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
                     }}
                   >
-                    {recipe.name}
-                  </span>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-                    {recipe.prepTime > 0 && (
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <span
+                        style={{
+                          fontFamily: 'var(--font-ui)',
+                          fontSize: 14,
+                          fontWeight: 500,
+                          color: 'var(--color-ink)',
+                          lineHeight: 1.3,
+                          display: 'block',
+                        }}
+                      >
+                        {recipe.name}
+                      </span>
                       <span
                         style={{
                           fontFamily: 'var(--font-ui)',
                           fontSize: 12,
                           color: 'var(--color-ink-faint)',
+                          lineHeight: 1.3,
                         }}
                       >
-                        {recipe.prepTime}m
+                        {lastDate
+                          ? t('calendar_last_cooked', { date: formatShortDate(lastDate) })
+                          : t('calendar_never_cooked')}
                       </span>
-                    )}
-                    {recipe.plants > 0 && (
-                      <span
-                        style={{
-                          fontFamily: 'var(--font-ui)',
-                          fontSize: 11,
-                          color: 'var(--color-accent)',
-                          background: 'var(--color-accent-bg)',
-                          padding: '2px 7px',
-                          borderRadius: 'var(--radius-full)',
-                          fontWeight: 500,
-                        }}
-                      >
-                        {recipe.plants}P
-                      </span>
-                    )}
-                  </div>
-                </button>
-              ))}
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                      {recipe.prepTime > 0 && (
+                        <span
+                          style={{
+                            fontFamily: 'var(--font-ui)',
+                            fontSize: 12,
+                            color: 'var(--color-ink-faint)',
+                          }}
+                        >
+                          {recipe.prepTime}m
+                        </span>
+                      )}
+                      {recipe.plants > 0 && (
+                        <span
+                          style={{
+                            fontFamily: 'var(--font-ui)',
+                            fontSize: 11,
+                            color: 'var(--color-accent)',
+                            background: 'var(--color-accent-bg)',
+                            padding: '2px 7px',
+                            borderRadius: 'var(--radius-full)',
+                            fontWeight: 500,
+                          }}
+                        >
+                          {recipe.plants}P
+                        </span>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           )}
         </div>
@@ -545,9 +616,11 @@ export default function CalendarScreen() {
   const [showPicker, setShowPicker] = useState(false);
   const [pickerDate, setPickerDate] = useState('');
   const [pickerMeal, setPickerMeal] = useState<MealType>('dinner');
-  const [myRecipes, setMyRecipes] = useState<Recipe[]>([]);
+  const [pickerFamilyRecipes, setPickerFamilyRecipes] = useState<Recipe[]>([]);
+  const [pickerStarredRecipes, setPickerStarredRecipes] = useState<Recipe[]>([]);
+  const [pickerCommunityRecipes, setPickerCommunityRecipes] = useState<Recipe[]>([]);
+  const [lastCookedMap, setLastCookedMap] = useState<Map<string, string>>(new Map());
   const [recipesLoading, setRecipesLoading] = useState(false);
-  const [recipeSearch, setRecipeSearch] = useState('');
   const [adding, setAdding] = useState(false);
 
   const days = getWeekDates(weekOffset);
@@ -557,32 +630,45 @@ export default function CalendarScreen() {
   // Data loading
   // ---------------------------------------------------------------------------
 
-  const loadCalendar = useCallback(async () => {
+  useEffect(() => {
     if (!user?.familyId) return;
     setLoading(true);
     setError(null);
-    try {
-      const data = await getWeekCalendar(user.familyId, dateStrings);
+    const unsub = listenToWeekCalendar(user.familyId, dateStrings, (data) => {
       setEntries(data);
-    } catch {
-      setError(t('error_generic'));
-    } finally {
       setLoading(false);
-    }
+    });
+    return () => unsub();
   }, [user?.familyId, weekOffset]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  useEffect(() => {
-    loadCalendar();
-  }, [loadCalendar]);
-
+  const pickerDataLoaded = useRef(false);
   const ensureRecipesLoaded = async () => {
-    if (!user || myRecipes.length > 0) return;
+    if (!user || pickerDataLoaded.current) return;
+    pickerDataLoaded.current = true;
     setRecipesLoading(true);
     try {
-      const recipes = await fetchMyRecipes(user.uid);
-      setMyRecipes(recipes);
+      const [family, starredIds, community, allEntries] = await Promise.all([
+        user.familyId ? fetchFamilyRecipes(user.familyId) : Promise.resolve([]),
+        getStarredIds(user.uid),
+        fetchCommunityRecipes(),
+        user.familyId ? fetchAllCalendarEntries(user.familyId) : Promise.resolve([]),
+      ]);
+      const starred = await fetchRecipesByIds(starredIds);
+      setPickerFamilyRecipes(family);
+      setPickerStarredRecipes(starred);
+      setPickerCommunityRecipes(community);
+
+      // Build last-cooked map: recipeId -> most recent date string
+      const map = new Map<string, string>();
+      for (const entry of allEntries) {
+        const existing = map.get(entry.recipeId);
+        if (!existing || entry.date > existing) {
+          map.set(entry.recipeId, entry.date);
+        }
+      }
+      setLastCookedMap(map);
     } catch {
-      // non-fatal; list will be empty
+      // non-fatal; lists will be empty
     } finally {
       setRecipesLoading(false);
     }
@@ -606,7 +692,6 @@ export default function CalendarScreen() {
   const handleAddClick = async (date: string, mealType: MealType) => {
     setPickerDate(date);
     setPickerMeal(mealType);
-    setRecipeSearch('');
     setShowPicker(true);
     await ensureRecipesLoaded();
   };
@@ -641,7 +726,6 @@ export default function CalendarScreen() {
         },
       });
       setShowPicker(false);
-      loadCalendar();
     } catch {
       // non-fatal; user can retry
     } finally {
@@ -658,6 +742,8 @@ export default function CalendarScreen() {
         prev.filter((e) => !(e.date === date && e.mealType === mealType))
       );
       setPopover(null);
+      // Recalculate plant diversity for the affected week
+      recalculateWeekDiversity(user.familyId, date).catch(() => {});
     } catch {
       // non-fatal
     } finally {
@@ -839,7 +925,7 @@ export default function CalendarScreen() {
                         letterSpacing: '0.04em',
                       }}
                     >
-                      {day.short}
+                      {day.isToday ? t('date_today') : `${t(`day_${day.short.toLowerCase()}`)} ${day.date.split('-')[2].replace(/^0/, '')}`}
                     </span>
                     {day.isToday && (
                       <div
@@ -962,10 +1048,11 @@ export default function CalendarScreen() {
         <RecipePickerSheet
           mealType={pickerMeal}
           date={pickerDate}
-          recipes={myRecipes}
+          familyRecipes={pickerFamilyRecipes}
+          starredRecipes={pickerStarredRecipes}
+          communityRecipes={pickerCommunityRecipes}
+          lastCookedMap={lastCookedMap}
           loading={recipesLoading}
-          search={recipeSearch}
-          onSearchChange={setRecipeSearch}
           onPick={handlePickRecipe}
           onClose={() => setShowPicker(false)}
           adding={adding}

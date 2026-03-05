@@ -63,16 +63,17 @@ service cloud.firestore {
 
     // Recipes
     match /recipes/{id} {
-      allow read: if resource.data.isPublic == true
-        || (isAuth() && request.auth.uid == resource.data.createdBy)
-        || (isAuth() && request.auth.uid in resource.data.savedBy);
+      allow read: if ('isPublic' in resource.data && resource.data.isPublic == true)
+        || (isAuth() && 'createdBy' in resource.data && request.auth.uid == resource.data.createdBy)
+        || (isAuth() && 'savedBy' in resource.data && request.auth.uid in resource.data.savedBy)
+        || (isAuth() && 'familyId' in resource.data && resource.data.familyId is string && resource.data.familyId != '' && isFamilyMember(resource.data.familyId));
       allow create: if isAuth();
       allow update: if isAuth() && (
-        request.auth.uid == resource.data.createdBy
+        ('createdBy' in resource.data && request.auth.uid == resource.data.createdBy)
         || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['savedBy'])
         || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['communityScore', 'ratingCount'])
       );
-      allow delete: if isAuth() && request.auth.uid == resource.data.createdBy;
+      allow delete: if isAuth() && 'createdBy' in resource.data && request.auth.uid == resource.data.createdBy;
 
       // Ratings
       match /ratings/{userId} {

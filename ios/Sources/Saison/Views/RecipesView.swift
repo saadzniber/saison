@@ -2,6 +2,7 @@ import SwiftUI
 
 struct RecipesView: View {
     @EnvironmentObject var appVM: AppViewModel
+    @EnvironmentObject var loc: LocalizationManager
     @State private var selectedTab = 0
     @State private var searchText = ""
     @State private var showCreateRecipe = false
@@ -11,9 +12,9 @@ struct RecipesView: View {
             ZStack(alignment: .bottomTrailing) {
                 VStack(spacing: 0) {
                     Picker("", selection: $selectedTab) {
-                        Text(NSLocalizedString("recipes_my", comment: "")).tag(0)
-                        Text(NSLocalizedString("recipes_starred", comment: "")).tag(1)
-                        Text(NSLocalizedString("recipes_community", comment: "")).tag(2)
+                        Text(loc.t("recipes_family")).tag(0)
+                        Text(loc.t("recipes_starred")).tag(1)
+                        Text(loc.t("recipes_community")).tag(2)
                     }
                     .pickerStyle(.segmented)
                     .padding(.horizontal, Theme.pagePadding)
@@ -22,7 +23,7 @@ struct RecipesView: View {
                     HStack {
                         Image(systemName: "magnifyingglass")
                             .foregroundColor(Theme.inkFaint)
-                        TextField(NSLocalizedString("recipes_search", comment: ""), text: $searchText)
+                        TextField(loc.t("recipes_search"), text: $searchText)
                             .font(Theme.ui(15))
                     }
                     .padding(12)
@@ -36,7 +37,7 @@ struct RecipesView: View {
                             NavigationLink(destination: RecipeDetailView(recipe: recipe)) {
                                 RecipeRowView(recipe: recipe)
                             }
-                            .listRowBackground(Theme.bg)
+                            .listRowBackground(Theme.surface)
                         }
                     }
                     .listStyle(.plain)
@@ -57,7 +58,10 @@ struct RecipesView: View {
                 .padding(.bottom, 20)
             }
             .background(Theme.bg.ignoresSafeArea())
-            .navigationTitle(NSLocalizedString("tab_recipes", comment: ""))
+            .navigationTitle(loc.t("tab_recipes"))
+            .refreshable {
+                await appVM.refreshAll()
+            }
             .sheet(isPresented: $showCreateRecipe) {
                 CreateRecipeView()
             }
@@ -70,8 +74,7 @@ struct RecipesView: View {
         case 0:
             source = appVM.recipes
         case 1:
-            let userId = appVM.user?.id ?? ""
-            source = appVM.recipes.filter { $0.starredBy.contains(userId) }
+            source = appVM.starredRecipes
         default:
             source = appVM.communityRecipes
         }

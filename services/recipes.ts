@@ -13,8 +13,46 @@ import {
   serverTimestamp,
   addDoc,
 } from 'firebase/firestore';
-import { getDb } from '@/lib/firebase';
-import type { Recipe } from '@/types';
+import { getDb, getFirebaseAuth } from '@/lib/firebase';
+import type { Recipe, Ingredient } from '@/types';
+
+/** Ensure the Firestore auth token is ready before making queries */
+async function ensureAuth(): Promise<void> {
+  const auth = getFirebaseAuth();
+  if (!auth.currentUser) {
+    await auth.authStateReady();
+  }
+}
+
+/* Normalize Firestore doc data to handle field name differences between web and iOS */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function toRecipe(id: string, d: Record<string, any>): Recipe {
+  return {
+    id,
+    name: d.name || d.title || '',
+    description: d.description || '',
+    ingredients: (d.ingredients || []).map((i: Record<string, unknown>) => ({
+      name: (i.name as string) || '',
+      amount: (i.amount as string) || (i.quantity as string) || '',
+      unit: (i.unit as string) || '',
+    } as Ingredient)),
+    produce: d.produce || [],
+    cuisine: d.cuisine || d.cuisineId || '',
+    seasons: d.seasons || [],
+    prepTime: d.prepTime ?? d.prepMinutes ?? 0,
+    servings: d.servings ?? 4,
+    plants: d.plants ?? (d.produce?.length || 0),
+    createdBy: d.createdBy || '',
+    createdByName: d.createdByName || '',
+    isPublic: d.isPublic || false,
+    savedBy: d.savedBy || d.starredBy || [],
+    communityScore: d.communityScore ?? 0,
+    ratingCount: d.ratingCount ?? 0,
+    steps: d.steps || d.instructions || [],
+    imageUrl: d.imageUrl || d.imageURL || undefined,
+    createdAt: d.createdAt?.toDate?.() ?? d.createdAt ?? undefined,
+  };
+}
 
 export async function fetchMyRecipes(uid: string): Promise<Recipe[]> {
   const db = getDb();
@@ -27,11 +65,11 @@ export async function fetchMyRecipes(uid: string): Promise<Recipe[]> {
 
   const map = new Map<string, Recipe>();
   for (const d of createdSnap.docs) {
-    map.set(d.id, { id: d.id, ...d.data() } as Recipe);
+    map.set(d.id, toRecipe(d.id, d.data()));
   }
   for (const d of savedSnap.docs) {
     if (!map.has(d.id)) {
-      map.set(d.id, { id: d.id, ...d.data() } as Recipe);
+      map.set(d.id, toRecipe(d.id, d.data()));
     }
   }
   return Array.from(map.values());
@@ -52,14 +90,24 @@ export async function fetchCommunityRecipes(
   }
 
   const snap = await getDocs(query(col, ...constraints));
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Recipe));
+  return snap.docs.map((d) => toRecipe(d.id, d.data()));
+}
+
+export async function fetchFamilyRecipes(familyId: string): Promise<Recipe[]> {
+  if (!familyId) return [];
+  await ensureAuth();
+  const db = getDb();
+  const snap = await getDocs(
+    query(collection(db, 'recipes'), where('familyId', '==', familyId))
+  );
+  return snap.docs.map((d) => toRecipe(d.id, d.data()));
 }
 
 export async function fetchRecipe(id: string): Promise<Recipe | null> {
   const db = getDb();
   const snap = await getDoc(doc(db, 'recipes', id));
   if (!snap.exists()) return null;
-  return { id: snap.id, ...snap.data() } as Recipe;
+  return toRecipe(snap.id, snap.data());
 }
 
 export async function fetchRecipesByIds(ids: string[]): Promise<Recipe[]> {
@@ -76,7 +124,7 @@ export async function fetchRecipesByIds(ids: string[]): Promise<Recipe[]> {
       query(collection(db, 'recipes'), where('__name__', 'in', batch))
     );
     for (const d of snap.docs) {
-      results.push({ id: d.id, ...d.data() } as Recipe);
+      results.push(toRecipe(d.id, d.data()));
     }
   }
   return results;
@@ -85,18 +133,27 @@ export async function fetchRecipesByIds(ids: string[]): Promise<Recipe[]> {
 export async function createRecipe(
   data: Omit<Recipe, 'id' | 'createdAt' | 'savedBy' | 'communityScore' | 'ratingCount'>,
   uid: string,
-  displayName: string
+  displayName: string,
+  familyId?: string
 ): Promise<string> {
   const db = getDb();
-  const ref = await addDoc(collection(db, 'recipes'), {
+  const docData: Record<string, unknown> = {
     ...data,
+    title: data.name,
     createdBy: uid,
     createdByName: displayName,
+    instructions: data.steps || [],
+    prepMinutes: data.prepTime,
     savedBy: [],
+    starredBy: [],
     communityScore: 0,
     ratingCount: 0,
     createdAt: serverTimestamp(),
-  });
+  };
+  if (familyId) {
+    docData.familyId = familyId;
+  }
+  const ref = await addDoc(collection(db, 'recipes'), docData);
   return ref.id;
 }
 

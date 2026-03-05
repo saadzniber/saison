@@ -9,6 +9,8 @@ import {
   generateInviteCode,
   leaveFamily,
 } from '@/services/family';
+import { doc, updateDoc } from 'firebase/firestore';
+import { getDb } from '@/lib/firebase';
 import type { Family, User } from '@/types';
 
 /* -------------------------------------------------------------------------- */
@@ -223,6 +225,29 @@ export default function SettingsScreen() {
   const [signingOut, setSigningOut] = useState(false);
   const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
 
+  const [editName, setEditName] = useState('');
+  const [savingName, setSavingName] = useState(false);
+  const [nameSaved, setNameSaved] = useState(false);
+
+  useEffect(() => {
+    if (user?.name) setEditName(user.name);
+  }, [user?.name]);
+
+  const handleSaveName = async () => {
+    if (!user || !editName.trim() || editName.trim() === user.name) return;
+    setSavingName(true);
+    try {
+      const db = getDb();
+      await updateDoc(doc(db, 'users', user.uid), { name: editName.trim() });
+      setNameSaved(true);
+      setTimeout(() => setNameSaved(false), 2000);
+    } catch {
+      /* silently fail */
+    } finally {
+      setSavingName(false);
+    }
+  };
+
   /* Load family data */
   const loadFamily = useCallback(async () => {
     if (!user?.uid) {
@@ -311,33 +336,79 @@ export default function SettingsScreen() {
         {/* ── Profile ─────────────────────────────────── */}
         <section style={{ marginBottom: 20 }}>
           <SectionHeader>{t('settings_profile')}</SectionHeader>
-          <Card style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            <Avatar photoUrl={user?.photoUrl} name={user?.name ?? ''} size={52} />
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <p
+          <Card>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
+              <Avatar photoUrl={user?.photoUrl} name={user?.name ?? ''} size={52} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p
+                  style={{
+                    fontFamily: 'var(--font-ui)',
+                    fontSize: 16,
+                    fontWeight: 600,
+                    color: 'var(--color-ink)',
+                    margin: 0,
+                  }}
+                >
+                  {user?.name ?? '—'}
+                </p>
+                <p
+                  style={{
+                    fontFamily: 'var(--font-ui)',
+                    fontSize: 13,
+                    color: 'var(--color-ink-muted)',
+                    margin: '2px 0 0',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {user?.email ?? ''}
+                </p>
+              </div>
+            </div>
+            <Divider />
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 16 }}>
+              <input
+                type="text"
+                value={editName}
+                onChange={(e) => { setEditName(e.target.value); setNameSaved(false); }}
+                placeholder={t('settings_display_name')}
                 style={{
+                  flex: 1,
+                  padding: '10px 14px',
+                  borderRadius: 'var(--radius-md)',
+                  border: '1px solid var(--color-border)',
+                  fontSize: 14,
                   fontFamily: 'var(--font-ui)',
-                  fontSize: 16,
-                  fontWeight: 600,
+                  background: 'var(--color-surface)',
                   color: 'var(--color-ink)',
-                  margin: 0,
+                  outline: 'none',
                 }}
-              >
-                {user?.name ?? '—'}
-              </p>
-              <p
+              />
+              <button
+                onClick={handleSaveName}
+                disabled={savingName || !editName.trim() || editName.trim() === user?.name}
                 style={{
+                  padding: '10px 18px',
+                  borderRadius: 'var(--radius-md)',
+                  border: 'none',
+                  background: nameSaved ? 'var(--color-accent-bg)' : 'var(--color-accent)',
                   fontFamily: 'var(--font-ui)',
-                  fontSize: 13,
-                  color: 'var(--color-ink-muted)',
-                  margin: '2px 0 0',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
+                  fontSize: 14,
+                  fontWeight: 600,
+                  color: nameSaved ? 'var(--color-accent)' : '#fff',
+                  cursor: savingName || !editName.trim() || editName.trim() === user?.name ? 'not-allowed' : 'pointer',
+                  opacity: savingName || !editName.trim() || editName.trim() === user?.name ? 0.5 : 1,
                   whiteSpace: 'nowrap',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  transition: 'all 0.15s',
                 }}
               >
-                {user?.email ?? ''}
-              </p>
+                {savingName ? <Spinner size={13} /> : nameSaved ? '✓' : null}
+                {nameSaved ? t('done') : t('save')}
+              </button>
             </div>
           </Card>
         </section>

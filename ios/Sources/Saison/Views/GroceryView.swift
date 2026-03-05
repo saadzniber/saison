@@ -2,6 +2,7 @@ import SwiftUI
 
 struct GroceryView: View {
     @EnvironmentObject var appVM: AppViewModel
+    @EnvironmentObject var loc: LocalizationManager
     @State private var newItemName = ""
     @State private var newItemQuantity = ""
     @State private var newItemUnit = ""
@@ -17,9 +18,7 @@ struct GroceryView: View {
 
     var body: some View {
         NavigationStack {
-            ZStack {
-                Theme.bg.ignoresSafeArea()
-
+            Group {
                 if appVM.groceryItems.isEmpty && !showAddForm {
                     emptyState
                 } else {
@@ -40,14 +39,14 @@ struct GroceryView: View {
                             if !checkedItems.isEmpty {
                                 VStack(alignment: .leading, spacing: 8) {
                                     HStack {
-                                        Text(NSLocalizedString("grocery_checked", comment: ""))
+                                        Text(loc.t("grocery_checked"))
                                             .font(Theme.ui(13, weight: .medium))
                                             .foregroundColor(Theme.inkMuted)
                                         Spacer()
                                         Button(action: {
                                             Task { await appVM.clearCheckedGrocery() }
                                         }) {
-                                            Text(NSLocalizedString("grocery_clear_checked", comment: ""))
+                                            Text(loc.t("grocery_clear_checked"))
                                                 .font(Theme.ui(13))
                                                 .foregroundColor(Theme.error)
                                         }
@@ -64,7 +63,8 @@ struct GroceryView: View {
                     }
                 }
             }
-            .navigationTitle(NSLocalizedString("tab_grocery", comment: ""))
+            .background(Theme.bg.ignoresSafeArea())
+            .navigationTitle(loc.t("tab_grocery"))
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: { withAnimation { showAddForm.toggle() } }) {
@@ -83,11 +83,11 @@ struct GroceryView: View {
             Image(systemName: "cart")
                 .font(.system(size: 48))
                 .foregroundColor(Theme.inkFaint)
-            Text(NSLocalizedString("grocery_empty", comment: ""))
+            Text(loc.t("grocery_empty"))
                 .font(Theme.ui(16))
                 .foregroundColor(Theme.inkMuted)
             Button(action: { withAnimation { showAddForm = true } }) {
-                Text(NSLocalizedString("grocery_add_first", comment: ""))
+                Text(loc.t("grocery_add_first"))
                     .font(Theme.ui(15, weight: .medium))
                     .foregroundColor(Theme.accent)
             }
@@ -99,13 +99,13 @@ struct GroceryView: View {
     private var addForm: some View {
         VStack(spacing: 12) {
             HStack(spacing: 8) {
-                TextField(NSLocalizedString("grocery_item_name", comment: ""), text: $newItemName)
+                TextField(loc.t("grocery_item_name"), text: $newItemName)
                     .font(Theme.ui(15))
-                TextField(NSLocalizedString("grocery_qty", comment: ""), text: $newItemQuantity)
+                TextField(loc.t("grocery_qty"), text: $newItemQuantity)
                     .font(Theme.ui(15))
                     .frame(width: 50)
                     .keyboardType(.decimalPad)
-                TextField(NSLocalizedString("grocery_unit", comment: ""), text: $newItemUnit)
+                TextField(loc.t("grocery_unit"), text: $newItemUnit)
                     .font(Theme.ui(15))
                     .frame(width: 50)
             }
@@ -118,7 +118,7 @@ struct GroceryView: View {
             )
 
             Button(action: handleAdd) {
-                Text(NSLocalizedString("grocery_add", comment: ""))
+                Text(loc.t("grocery_add"))
                     .font(Theme.ui(15, weight: .medium))
                     .frame(maxWidth: .infinity)
                     .frame(height: 44)
@@ -149,10 +149,24 @@ struct GroceryView: View {
                         .font(Theme.ui(15, weight: .medium))
                         .foregroundColor(item.isChecked ? Theme.inkFaint : Theme.ink)
                         .strikethrough(item.isChecked)
-                    if !item.quantity.isEmpty || !item.unit.isEmpty {
-                        Text("\(item.quantity) \(item.unit)".trimmingCharacters(in: .whitespaces))
-                            .font(Theme.ui(13))
-                            .foregroundColor(Theme.inkMuted)
+                    HStack(spacing: 4) {
+                        if !item.quantity.isEmpty || !item.unit.isEmpty {
+                            Text("\(item.quantity) \(item.unit)".trimmingCharacters(in: .whitespaces))
+                                .font(Theme.ui(13))
+                                .foregroundColor(Theme.inkMuted)
+                        }
+                        if !item.addedByName.isEmpty {
+                            if !item.quantity.isEmpty || !item.unit.isEmpty {
+                                Text("·")
+                                    .font(Theme.ui(13))
+                                    .foregroundColor(Theme.inkFaint)
+                            }
+                            Text(item.addedBy == appVM.user?.id
+                                ? loc.t("grocery_you")
+                                : item.addedByName.components(separatedBy: " ").first ?? item.addedByName)
+                                .font(Theme.ui(12))
+                                .foregroundColor(Theme.inkFaint)
+                        }
                     }
                 }
 

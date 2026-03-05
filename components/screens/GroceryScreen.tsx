@@ -236,7 +236,7 @@ function GroceryRow({ item, onToggle, onDelete, toggling, deleting }: GroceryRow
           >
             {item.name}
           </span>
-          {(item.amount || item.recipeName) && (
+          {(item.amount || item.recipeName || item.addedByName) && (
             <span
               style={{
                 fontFamily: 'var(--font-ui)',
@@ -251,6 +251,9 @@ function GroceryRow({ item, onToggle, onDelete, toggling, deleting }: GroceryRow
                 : ''}
               {item.recipeName
                 ? `${item.amount ? ' · ' : ''}from ${item.recipeName}`
+                : ''}
+              {item.addedByName
+                ? `${item.amount || item.recipeName ? ' · ' : ''}${item.addedByName.split(' ')[0]}`
                 : ''}
             </span>
           )}

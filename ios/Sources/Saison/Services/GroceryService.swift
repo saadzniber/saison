@@ -25,6 +25,7 @@ class GroceryService: FirebaseService, ObservableObject {
                 "isChecked": item.isChecked,
                 "familyId": familyId,
                 "addedBy": item.addedBy,
+                "addedByName": item.addedByName,
                 "createdAt": Timestamp(date: item.createdAt)
             ]
             batch.setData(data, forDocument: ref)
@@ -62,6 +63,7 @@ class GroceryService: FirebaseService, ObservableObject {
             isChecked: data["isChecked"] as? Bool ?? false,
             familyId: data["familyId"] as? String ?? "",
             addedBy: data["addedBy"] as? String ?? "",
+            addedByName: data["addedByName"] as? String ?? "",
             createdAt: (data["createdAt"] as? Timestamp)?.dateValue() ?? Date()
         )
     }

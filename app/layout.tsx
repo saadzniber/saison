@@ -7,6 +7,14 @@ import './globals.css';
 export const metadata: Metadata = {
   title: 'Saison',
   description: 'Eat with the seasons — track diversity, plan with family, discover seasonal produce.',
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: '32x32' },
+      { url: '/icon.svg', type: 'image/svg+xml' },
+    ],
+    apple: '/apple-touch-icon.png',
+  },
+  manifest: '/manifest.json',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

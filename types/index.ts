@@ -51,6 +51,7 @@ export interface Recipe {
   savedBy: string[];
   communityScore?: number;
   ratingCount?: number;
+  steps?: string[];
   imageUrl?: string;
   createdAt?: Date;
 }

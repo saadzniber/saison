@@ -2,8 +2,10 @@ import SwiftUI
 
 struct SettingsView: View {
     @EnvironmentObject var appVM: AppViewModel
-    @AppStorage("appLanguage") private var appLanguage = "en"
+    @EnvironmentObject var loc: LocalizationManager
     @State private var showDeleteConfirmation = false
+    @State private var editedName = ""
+    @State private var isSavingName = false
 
     var body: some View {
         List {
@@ -15,10 +17,10 @@ struct SettingsView: View {
         .listStyle(.insetGrouped)
         .scrollContentBackground(.hidden)
         .background(Theme.bg.ignoresSafeArea())
-        .navigationTitle(NSLocalizedString("settings_title", comment: ""))
-        .alert(NSLocalizedString("settings_delete_confirm", comment: ""), isPresented: $showDeleteConfirmation) {
-            Button(NSLocalizedString("cancel", comment: ""), role: .cancel) {}
-            Button(NSLocalizedString("settings_delete", comment: ""), role: .destructive) {
+        .navigationTitle(loc.t("settings_title"))
+        .alert(loc.t("settings_delete_confirm"), isPresented: $showDeleteConfirmation) {
+            Button(loc.t("cancel"), role: .cancel) {}
+            Button(loc.t("settings_delete"), role: .destructive) {
                 Task { await appVM.deleteAccount() }
             }
         }
@@ -27,7 +29,7 @@ struct SettingsView: View {
     // MARK: - Profile
 
     private var profileSection: some View {
-        Section(header: Text(NSLocalizedString("settings_profile", comment: ""))) {
+        Section(header: Text(loc.t("settings_profile")).foregroundColor(Theme.inkMuted)) {
             HStack(spacing: 12) {
                 Circle()
                     .fill(Theme.accentBg)
@@ -47,30 +49,61 @@ struct SettingsView: View {
                 }
             }
             .padding(.vertical, 4)
+            .listRowBackground(Theme.surface)
+
+            HStack {
+                TextField(loc.t("settings_display_name"), text: $editedName)
+                    .font(Theme.ui(15))
+                    .foregroundColor(Theme.ink)
+                    .onAppear {
+                        editedName = appVM.user?.displayName ?? ""
+                    }
+
+                Button(action: {
+                    let trimmed = editedName.trimmingCharacters(in: .whitespaces)
+                    guard !trimmed.isEmpty, trimmed != appVM.user?.displayName else { return }
+                    isSavingName = true
+                    Task {
+                        await appVM.updateDisplayName(trimmed)
+                        isSavingName = false
+                    }
+                }) {
+                    if isSavingName {
+                        ProgressView()
+                            .frame(width: 16, height: 16)
+                    } else {
+                        Text(loc.t("save"))
+                            .font(Theme.ui(14, weight: .semibold))
+                            .foregroundColor(Theme.accent)
+                    }
+                }
+                .disabled(editedName.trimmingCharacters(in: .whitespaces).isEmpty || editedName.trimmingCharacters(in: .whitespaces) == appVM.user?.displayName || isSavingName)
+            }
+            .listRowBackground(Theme.surface)
         }
     }
 
     // MARK: - Family
 
     private var familySection: some View {
-        Section(header: Text(NSLocalizedString("settings_family", comment: ""))) {
+        Section(header: Text(loc.t("settings_family")).foregroundColor(Theme.inkMuted)) {
             if let family = appVM.family {
                 HStack {
-                    Text(NSLocalizedString("settings_family_name", comment: ""))
+                    Text(loc.t("settings_family_name"))
                         .foregroundColor(Theme.ink)
                     Spacer()
                     Text(family.name)
                         .foregroundColor(Theme.inkMuted)
                 }
                 HStack {
-                    Text(NSLocalizedString("settings_members", comment: ""))
+                    Text(loc.t("settings_members"))
                         .foregroundColor(Theme.ink)
                     Spacer()
                     Text("\(family.memberIds.count)")
                         .foregroundColor(Theme.inkMuted)
                 }
                 HStack {
-                    Text(NSLocalizedString("settings_invite_code", comment: ""))
+                    Text(loc.t("settings_invite_code"))
                         .foregroundColor(Theme.ink)
                     Spacer()
                     Text(family.inviteCode)
@@ -85,22 +118,24 @@ struct SettingsView: View {
                     }
                 }
             } else {
-                Text(NSLocalizedString("settings_no_family", comment: ""))
+                Text(loc.t("settings_no_family"))
                     .foregroundColor(Theme.inkMuted)
             }
         }
+        .listRowBackground(Theme.surface)
     }
 
     // MARK: - Language
 
     private var languageSection: some View {
-        Section(header: Text(NSLocalizedString("settings_language", comment: ""))) {
-            Picker(NSLocalizedString("settings_language", comment: ""), selection: $appLanguage) {
-                Text("English").tag("en")
-                Text("Francais").tag("fr")
+        Section(header: Text(loc.t("settings_language")).foregroundColor(Theme.inkMuted)) {
+            Picker(loc.t("settings_language"), selection: $loc.language) {
+                Text(loc.t("lang_english")).tag("en")
+                Text(loc.t("lang_french")).tag("fr")
             }
             .pickerStyle(.segmented)
         }
+        .listRowBackground(Theme.surface)
     }
 
     // MARK: - Account
@@ -110,7 +145,7 @@ struct SettingsView: View {
             Button(action: { appVM.signOut() }) {
                 HStack {
                     Image(systemName: "rectangle.portrait.and.arrow.right")
-                    Text(NSLocalizedString("settings_sign_out", comment: ""))
+                    Text(loc.t("settings_sign_out"))
                 }
                 .foregroundColor(Theme.ink)
             }
@@ -118,10 +153,11 @@ struct SettingsView: View {
             Button(action: { showDeleteConfirmation = true }) {
                 HStack {
                     Image(systemName: "trash")
-                    Text(NSLocalizedString("settings_delete_account", comment: ""))
+                    Text(loc.t("settings_delete_account"))
                 }
                 .foregroundColor(Theme.error)
             }
         }
+        .listRowBackground(Theme.surface)
     }
 }

@@ -2,23 +2,32 @@ import SwiftUI
 
 struct RecipeDetailView: View {
     @EnvironmentObject var appVM: AppViewModel
+    @EnvironmentObject var loc: LocalizationManager
     let recipe: Recipe
 
     @State private var showAddToCalendar = false
     @State private var showEditRecipe = false
+    @State private var showDeleteConfirm = false
     @State private var calendarDate = Date()
     @State private var calendarMealType: MealType = .dinner
+    @State private var groceryAdded = false
+    @Environment(\.dismiss) private var dismiss
+
+    /// Live version of the recipe from the view model (updates after rating, starring, etc.)
+    private var liveRecipe: Recipe {
+        appVM.recipes.first(where: { $0.id == recipe.id }) ?? recipe
+    }
 
     private var isCreator: Bool {
-        recipe.creatorId == appVM.user?.id
+        liveRecipe.creatorId == appVM.user?.id
     }
 
     private var isStarred: Bool {
-        recipe.starredBy.contains(appVM.user?.id ?? "")
+        appVM.starredRecipeIds.contains(recipe.id)
     }
 
     private var currentRating: Int {
-        recipe.ratings[appVM.user?.id ?? ""] ?? 0
+        liveRecipe.ratings[appVM.user?.id ?? ""] ?? 0
     }
 
     var body: some View {
@@ -36,14 +45,14 @@ struct RecipeDetailView: View {
             .padding(.bottom, 100)
         }
         .background(Theme.bg.ignoresSafeArea())
-        .navigationTitle(recipe.title)
-        .navigationBarTitleDisplayMode(.large)
+        .navigationTitle("")
+        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 HStack(spacing: 16) {
                     if !isCreator {
                         Button(action: {
-                            Task { await appVM.toggleStar(recipe: recipe) }
+                            Task { await appVM.toggleStar(recipe: liveRecipe) }
                         }) {
                             Image(systemName: isStarred ? "star.fill" : "star")
                                 .foregroundColor(isStarred ? Theme.warm : Theme.inkMuted)
@@ -54,6 +63,10 @@ struct RecipeDetailView: View {
                             Image(systemName: "pencil")
                                 .foregroundColor(Theme.inkMuted)
                         }
+                        Button(action: { showDeleteConfirm = true }) {
+                            Image(systemName: "trash")
+                                .foregroundColor(.red)
+                        }
                     }
                 }
             }
@@ -62,7 +75,18 @@ struct RecipeDetailView: View {
             addToCalendarSheet
         }
         .sheet(isPresented: $showEditRecipe) {
-            CreateRecipeView(editRecipe: recipe)
+            CreateRecipeView(editRecipe: liveRecipe)
+        }
+        .alert(loc.t("recipe_delete_title"), isPresented: $showDeleteConfirm) {
+            Button(loc.t("cancel"), role: .cancel) { }
+            Button(loc.t("delete"), role: .destructive) {
+                Task {
+                    await appVM.deleteRecipe(liveRecipe)
+                    dismiss()
+                }
+            }
+        } message: {
+            Text(loc.t("recipe_delete_confirm"))
         }
     }
 
@@ -70,12 +94,22 @@ struct RecipeDetailView: View {
 
     private var headerSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(recipe.description)
-                .font(Theme.ui(15))
-                .foregroundColor(Theme.inkMuted)
+            Text(liveRecipe.title)
+                .font(Theme.display(24, weight: .semibold))
+                .foregroundColor(Theme.ink)
+
+            if !liveRecipe.description.isEmpty {
+                Text(liveRecipe.description)
+                    .font(Theme.ui(15))
+                    .foregroundColor(Theme.inkMuted)
+            }
+
+            Text(DateFormatting.fullDate(from: liveRecipe.createdAt))
+                .font(Theme.ui(12))
+                .foregroundColor(Theme.inkFaint)
 
             HStack(spacing: 8) {
-                ForEach(recipe.seasons) { season in
+                ForEach(liveRecipe.seasons) { season in
                     Text("\(season.emoji) \(season.label)")
                         .font(Theme.ui(12, weight: .medium))
                         .padding(.horizontal, 8)
@@ -86,11 +120,12 @@ struct RecipeDetailView: View {
                 }
             }
 
-            if !recipe.produce.isEmpty {
+            if !liveRecipe.produce.isEmpty {
                 HStack(spacing: 6) {
-                    ForEach(recipe.produce, id: \.self) { p in
+                    ForEach(liveRecipe.produce, id: \.self) { p in
                         Text(p)
                             .font(Theme.ui(12))
+                            .foregroundColor(Theme.ink)
                             .padding(.horizontal, 8)
                             .padding(.vertical, 4)
                             .background(Theme.surfaceRaised)
@@ -105,9 +140,9 @@ struct RecipeDetailView: View {
 
     private var metaSection: some View {
         HStack(spacing: 20) {
-            metaItem(icon: "clock", label: NSLocalizedString("recipe_prep", comment: ""), value: "\(recipe.prepMinutes) min")
-            metaItem(icon: "flame", label: NSLocalizedString("recipe_cook", comment: ""), value: "\(recipe.cookMinutes) min")
-            metaItem(icon: "person.2", label: NSLocalizedString("recipe_servings", comment: ""), value: "\(recipe.servings)")
+            metaItem(icon: "clock", label: loc.t("recipe_prep"), value: "\(liveRecipe.prepMinutes) min")
+            metaItem(icon: "flame", label: loc.t("recipe_cook"), value: "\(liveRecipe.cookMinutes) min")
+            metaItem(icon: "person.2", label: loc.t("recipe_servings"), value: "\(liveRecipe.servings)")
         }
         .padding(16)
         .background(Theme.surface)
@@ -137,14 +172,14 @@ struct RecipeDetailView: View {
 
     private var ratingSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(NSLocalizedString("recipe_your_rating", comment: ""))
+            Text(loc.t("recipe_your_rating"))
                 .font(Theme.ui(14, weight: .medium))
                 .foregroundColor(Theme.ink)
 
             HStack(spacing: 8) {
                 ForEach(1...5, id: \.self) { star in
                     Button(action: {
-                        Task { await appVM.rateRecipe(recipe: recipe, rating: star) }
+                        Task { await appVM.rateRecipe(recipe: liveRecipe, rating: star) }
                     }) {
                         Image(systemName: star <= currentRating ? "star.fill" : "star")
                             .font(.system(size: 24))
@@ -153,8 +188,8 @@ struct RecipeDetailView: View {
                 }
             }
 
-            if recipe.averageRating > 0 {
-                Text(String(format: NSLocalizedString("recipe_avg_rating", comment: ""), recipe.averageRating, recipe.ratings.count))
+            if liveRecipe.averageRating > 0 {
+                Text(String(format: loc.t("recipe_avg_rating"), liveRecipe.averageRating, liveRecipe.ratings.count))
                     .font(Theme.ui(12))
                     .foregroundColor(Theme.inkMuted)
             }
@@ -165,11 +200,11 @@ struct RecipeDetailView: View {
 
     private var ingredientsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text(NSLocalizedString("recipe_ingredients", comment: ""))
+            Text(loc.t("recipe_ingredients"))
                 .font(Theme.ui(17, weight: .semibold))
                 .foregroundColor(Theme.ink)
 
-            ForEach(recipe.ingredients) { ingredient in
+            ForEach(liveRecipe.ingredients) { ingredient in
                 HStack {
                     Circle()
                         .fill(ingredient.isProduce ? Theme.accent : Theme.inkFaint)
@@ -187,11 +222,11 @@ struct RecipeDetailView: View {
 
     private var instructionsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text(NSLocalizedString("recipe_instructions", comment: ""))
+            Text(loc.t("recipe_instructions"))
                 .font(Theme.ui(17, weight: .semibold))
                 .foregroundColor(Theme.ink)
 
-            ForEach(Array(recipe.instructions.enumerated()), id: \.offset) { index, step in
+            ForEach(Array(liveRecipe.instructions.enumerated()), id: \.offset) { index, step in
                 HStack(alignment: .top, spacing: 12) {
                     Text("\(index + 1)")
                         .font(Theme.ui(13, weight: .semibold))
@@ -215,7 +250,7 @@ struct RecipeDetailView: View {
             Button(action: { showAddToCalendar = true }) {
                 HStack {
                     Image(systemName: "calendar.badge.plus")
-                    Text(NSLocalizedString("recipe_add_to_calendar", comment: ""))
+                    Text(loc.t("recipe_add_to_calendar"))
                         .font(Theme.ui(15, weight: .medium))
                 }
                 .frame(maxWidth: .infinity)
@@ -226,23 +261,30 @@ struct RecipeDetailView: View {
             }
 
             Button(action: {
-                Task { await appVM.addIngredientsToGrocery(ingredients: recipe.ingredients) }
+                guard !groceryAdded else { return }
+                Task {
+                    await appVM.addIngredientsToGrocery(ingredients: liveRecipe.ingredients)
+                    withAnimation { groceryAdded = true }
+                }
             }) {
                 HStack {
-                    Image(systemName: "cart.badge.plus")
-                    Text(NSLocalizedString("recipe_add_to_grocery", comment: ""))
+                    Image(systemName: groceryAdded ? "checkmark.circle.fill" : "cart.badge.plus")
+                    Text(groceryAdded
+                         ? loc.t("recipe_added_to_grocery")
+                         : loc.t("recipe_add_to_grocery"))
                         .font(Theme.ui(15, weight: .medium))
                 }
                 .frame(maxWidth: .infinity)
                 .frame(height: 48)
-                .background(Theme.surface)
-                .foregroundColor(Theme.ink)
+                .background(groceryAdded ? Theme.accentBg : Theme.surface)
+                .foregroundColor(groceryAdded ? Theme.accent : Theme.ink)
                 .cornerRadius(Theme.radiusMD)
                 .overlay(
                     RoundedRectangle(cornerRadius: Theme.radiusMD)
-                        .stroke(Theme.border, lineWidth: 1)
+                        .stroke(groceryAdded ? Theme.accent.opacity(0.3) : Theme.border, lineWidth: 1)
                 )
             }
+            .disabled(groceryAdded)
         }
     }
 
@@ -252,13 +294,13 @@ struct RecipeDetailView: View {
         NavigationStack {
             VStack(spacing: 24) {
                 DatePicker(
-                    NSLocalizedString("recipe_select_date", comment: ""),
+                    loc.t("recipe_select_date"),
                     selection: $calendarDate,
                     displayedComponents: .date
                 )
                 .datePickerStyle(.graphical)
 
-                Picker(NSLocalizedString("recipe_meal_type", comment: ""), selection: $calendarMealType) {
+                Picker(loc.t("recipe_meal_type"), selection: $calendarMealType) {
                     ForEach(MealType.allCases) { mt in
                         Text(mt.label).tag(mt)
                     }
@@ -270,15 +312,15 @@ struct RecipeDetailView: View {
                     fmt.dateFormat = "yyyy-MM-dd"
                     Task {
                         await appVM.addToCalendar(
-                            recipeId: recipe.id,
-                            recipeTitle: recipe.title,
+                            recipeId: liveRecipe.id,
+                            recipeTitle: liveRecipe.title,
                             date: fmt.string(from: calendarDate),
                             mealType: calendarMealType
                         )
                         showAddToCalendar = false
                     }
                 }) {
-                    Text(NSLocalizedString("recipe_confirm_add", comment: ""))
+                    Text(loc.t("recipe_confirm_add"))
                         .font(Theme.ui(16, weight: .medium))
                         .frame(maxWidth: .infinity)
                         .frame(height: 48)
@@ -289,11 +331,11 @@ struct RecipeDetailView: View {
             }
             .padding(Theme.pagePadding)
             .background(Theme.bg.ignoresSafeArea())
-            .navigationTitle(NSLocalizedString("recipe_add_to_calendar", comment: ""))
+            .navigationTitle(loc.t("recipe_add_to_calendar"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(NSLocalizedString("cancel", comment: "")) {
+                    Button(loc.t("cancel")) {
                         showAddToCalendar = false
                     }
                 }

@@ -37,6 +37,9 @@
 		B2DAE00AFBC78DF8732937DE /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = E518F7F33A539F477974CDFC /* FirebaseAuth */; };
 		BEAC7914C943C488E4523B9A /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 296258190BF12641B69A7F74 /* GoogleSignInSwift */; };
 		FD67F0387D8F862F3AE55E43 /* SaisonApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 819CDF2CF8D9925D447DDE0D /* SaisonApp.swift */; };
+		A1B2C3D4E5F60718192A3B4C /* DateFormatting.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E5F6A1B2C30718192A3B4C /* DateFormatting.swift */; };
+		L0C0000100000000000000001 /* LocalizationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = L0C0000100000000000000002 /* LocalizationManager.swift */; };
+		ICON0001A2B3C4D5E6F70001 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = ICON0001A2B3C4D5E6F70002 /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -68,6 +71,9 @@
 		F0BDAF6F91DED1D16AF757F7 /* CalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarView.swift; sourceTree = "<group>"; };
 		F6878118C9B29E2C6CFD2DFA /* CreateRecipeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateRecipeView.swift; sourceTree = "<group>"; };
 		FBB7A551B8CD7D0064412F96 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		D4E5F6A1B2C30718192A3B4C /* DateFormatting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateFormatting.swift; sourceTree = "<group>"; };
+		L0C0000100000000000000002 /* LocalizationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizationManager.swift; sourceTree = "<group>"; };
+		ICON0001A2B3C4D5E6F70002 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -129,7 +135,10 @@
 		5762670976F0EA7554B213CB /* Saison */ = {
 			isa = PBXGroup;
 			children = (
+				ICON0001A2B3C4D5E6F70002 /* Assets.xcassets */,
 				FBB7A551B8CD7D0064412F96 /* ContentView.swift */,
+				D4E5F6A1B2C30718192A3B4C /* DateFormatting.swift */,
+				L0C0000100000000000000002 /* LocalizationManager.swift */,
 				7B31C4531ED6AEDAC808DAD9 /* GoogleService-Info.plist */,
 				9B88E8131C54371C1A4477BC /* Info.plist */,
 				49A0B4AA310E29442826B101 /* Localizable.strings */,
@@ -244,6 +253,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				ICON0001A2B3C4D5E6F70001 /* Assets.xcassets in Resources */,
 				933DFDB7B331270F337E4244 /* GoogleService-Info.plist in Resources */,
 				7607CE127E2F82A41CE02380 /* Localizable.strings in Resources */,
 			);
@@ -261,6 +271,8 @@
 				9C4FB8FD97B81007FBE3B7B2 /* CalendarService.swift in Sources */,
 				8EC108B158546B61981459FB /* CalendarView.swift in Sources */,
 				27F49016AC5ADCF5B648C4CE /* ContentView.swift in Sources */,
+				A1B2C3D4E5F60718192A3B4C /* DateFormatting.swift in Sources */,
+				L0C0000100000000000000001 /* LocalizationManager.swift in Sources */,
 				40A398FE6EB2AE0D7CBFB73D /* CreateRecipeView.swift in Sources */,
 				9F1A4500EEDB11BF8B091F1A /* FamilyService.swift in Sources */,
 				84E2A7701FC6513A136A1346 /* FirebaseService.swift in Sources */,

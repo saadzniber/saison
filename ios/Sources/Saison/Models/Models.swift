@@ -8,9 +8,9 @@ enum MealType: String, Codable, CaseIterable, Identifiable {
 
     var label: String {
         switch self {
-        case .breakfast: return NSLocalizedString("meal_breakfast", comment: "")
-        case .lunch: return NSLocalizedString("meal_lunch", comment: "")
-        case .dinner: return NSLocalizedString("meal_dinner", comment: "")
+        case .breakfast: return LocalizationManager.shared.t("meal_breakfast")
+        case .lunch: return LocalizationManager.shared.t("meal_lunch")
+        case .dinner: return LocalizationManager.shared.t("meal_dinner")
         }
     }
 
@@ -29,10 +29,10 @@ enum Season: String, Codable, CaseIterable, Identifiable {
 
     var label: String {
         switch self {
-        case .spring: return NSLocalizedString("season_spring", comment: "")
-        case .summer: return NSLocalizedString("season_summer", comment: "")
-        case .autumn: return NSLocalizedString("season_autumn", comment: "")
-        case .winter: return NSLocalizedString("season_winter", comment: "")
+        case .spring: return LocalizationManager.shared.t("season_spring")
+        case .summer: return LocalizationManager.shared.t("season_summer")
+        case .autumn: return LocalizationManager.shared.t("season_autumn")
+        case .winter: return LocalizationManager.shared.t("season_winter")
         }
     }
 
@@ -69,10 +69,26 @@ struct ProduceName: Codable, Hashable {
 
 // MARK: - Produce
 
+enum ProduceType: String, Codable, CaseIterable {
+    case vegetable, fruit, herb, grain, legume, nut
+
+    var label: String {
+        switch self {
+        case .vegetable: return LocalizationManager.shared.t("produce_vegetable")
+        case .fruit: return LocalizationManager.shared.t("produce_fruit")
+        case .herb: return LocalizationManager.shared.t("produce_herb")
+        case .grain: return LocalizationManager.shared.t("produce_grain")
+        case .legume: return LocalizationManager.shared.t("produce_legume")
+        case .nut: return LocalizationManager.shared.t("produce_nut")
+        }
+    }
+}
+
 struct Produce: Codable, Hashable, Identifiable {
     let id: String
     let name: ProduceName
     let emoji: String
+    let type: ProduceType
     let seasons: [Season]
 }
 
@@ -82,6 +98,41 @@ struct Cuisine: Codable, Hashable, Identifiable {
     let id: String
     let name: ProduceName
     let emoji: String
+}
+
+// MARK: - CuisineOption
+
+struct CuisineOption: Identifiable {
+    let id: String
+    let emoji: String
+    let en: String
+    let fr: String
+
+    var label: String {
+        Locale.current.language.languageCode?.identifier == "fr" ? fr : en
+    }
+
+    static let all: [CuisineOption] = [
+        CuisineOption(id: "french", emoji: "🇫🇷", en: "French", fr: "Française"),
+        CuisineOption(id: "italian", emoji: "🇮🇹", en: "Italian", fr: "Italienne"),
+        CuisineOption(id: "japanese", emoji: "🇯🇵", en: "Japanese", fr: "Japonaise"),
+        CuisineOption(id: "chinese", emoji: "🇨🇳", en: "Chinese", fr: "Chinoise"),
+        CuisineOption(id: "indian", emoji: "🇮🇳", en: "Indian", fr: "Indienne"),
+        CuisineOption(id: "mexican", emoji: "🇲🇽", en: "Mexican", fr: "Mexicaine"),
+        CuisineOption(id: "mediterranean", emoji: "🫒", en: "Mediterranean", fr: "Méditerranéenne"),
+        CuisineOption(id: "middle-eastern", emoji: "🧆", en: "Middle Eastern", fr: "Moyen-orientale"),
+        CuisineOption(id: "american", emoji: "🇺🇸", en: "American", fr: "Américaine"),
+        CuisineOption(id: "thai", emoji: "🇹🇭", en: "Thai", fr: "Thaïlandaise"),
+        CuisineOption(id: "greek", emoji: "🇬🇷", en: "Greek", fr: "Grecque"),
+        CuisineOption(id: "moroccan", emoji: "🇲🇦", en: "Moroccan", fr: "Marocaine"),
+        CuisineOption(id: "lebanese", emoji: "🇱🇧", en: "Lebanese", fr: "Libanaise"),
+        CuisineOption(id: "spanish", emoji: "🇪🇸", en: "Spanish", fr: "Espagnole"),
+        CuisineOption(id: "vietnamese", emoji: "🇻🇳", en: "Vietnamese", fr: "Vietnamienne"),
+        CuisineOption(id: "korean", emoji: "🇰🇷", en: "Korean", fr: "Coréenne"),
+        CuisineOption(id: "british", emoji: "🇬🇧", en: "British", fr: "Britannique"),
+        CuisineOption(id: "nordic", emoji: "🇸🇪", en: "Nordic", fr: "Nordique"),
+        CuisineOption(id: "asian", emoji: "🥢", en: "Asian", fr: "Asiatique"),
+    ]
 }
 
 // MARK: - Ingredient
@@ -178,6 +229,7 @@ struct GroceryItem: Codable, Identifiable {
     var isChecked: Bool
     var familyId: String
     var addedBy: String
+    var addedByName: String
     var createdAt: Date
 }
 
@@ -194,9 +246,30 @@ struct WeeklyDiversity: Codable {
 
 struct ActivityItem: Codable, Identifiable {
     let id: String
-    var type: String // "recipe_added", "calendar_update", "grocery_added"
-    var message: String
+    var type: String // "recipe_created", "calendar_added", "grocery_added"
+    var payload: [String: String]
     var userId: String
     var userName: String
     var timestamp: Date
+
+    /// Construct a localized display message from type + payload
+    var message: String {
+        let loc = LocalizationManager.shared
+        switch type {
+        case "recipe_created":
+            return String(format: loc.t("activity_recipe_created"), payload["recipeName"] ?? "")
+        case "recipe_saved":
+            return String(format: loc.t("activity_recipe_saved"), payload["recipeName"] ?? "")
+        case "calendar_added":
+            let meal = payload["mealType"] ?? ""
+            let recipe = payload["recipeName"] ?? ""
+            return String(format: loc.t("activity_calendar_added"), meal, recipe)
+        case "grocery_added":
+            return loc.t("activity_grocery_added")
+        case "member_joined":
+            return loc.t("activity_member_joined")
+        default:
+            return ""
+        }
+    }
 }

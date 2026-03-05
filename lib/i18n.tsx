@@ -48,15 +48,20 @@ const translations: Record<Locale, Record<string, string>> = {
     home_activity: 'Family Activity',
     home_no_activity: 'No activity yet',
     home_this_week: 'This Week',
+    home_todays_meals: "Today's Meals",
+    home_tomorrow_preview: 'Tomorrow',
+    home_plan_meal: 'Plan a meal',
     home_plants_challenge_title: 'The 30 Plants Challenge',
     home_plants_challenge_body: 'Research from the American Gut Project shows that people who eat 30 or more different plant types per week have significantly more diverse gut microbiomes, which is linked to better overall health. Track your plant diversity with Saison!',
 
     // Recipes
     recipe_my: 'My Recipes',
+    recipe_family: 'Family',
     recipe_starred: 'Starred',
     recipe_community: 'Community',
     recipe_search: 'Search recipes...',
     recipe_empty_my: 'No recipes yet. Create your first!',
+    recipe_empty_family: 'No family recipes yet.',
     recipe_empty_starred: 'No starred recipes yet.',
     recipe_empty_community: 'No community recipes yet.',
     recipe_new: 'New Recipe',
@@ -65,9 +70,11 @@ const translations: Record<Locale, Record<string, string>> = {
     recipe_unsave: 'Unsave',
     recipe_edit: 'Edit',
     recipe_delete: 'Delete',
+    recipe_delete_confirm: 'Are you sure you want to delete this recipe?',
     recipe_add_calendar: 'Add to Calendar',
     recipe_add_grocery: 'Add to Grocery List',
     recipe_ingredients: 'Ingredients',
+    recipe_steps: 'Steps',
     recipe_produce: 'Produce',
     recipe_preptime: 'Prep Time',
     recipe_servings: 'Servings',
@@ -89,6 +96,8 @@ const translations: Record<Locale, Record<string, string>> = {
     create_servings: 'Servings',
     create_ingredients: 'Ingredients',
     create_add_ingredient: 'Add Ingredient',
+    create_steps: 'Steps',
+    create_add_step: 'Add Step',
     create_produce: 'Produce',
     create_save: 'Save Recipe',
     create_saving: 'Saving...',
@@ -107,6 +116,9 @@ const translations: Record<Locale, Record<string, string>> = {
     calendar_empty: 'No meals planned',
     calendar_week_of: 'Week of',
     calendar_planned: '{n} meals planned',
+    calendar_last_cooked: 'Last: {date}',
+    calendar_never_cooked: 'Never cooked',
+    calendar_pick_recipe: 'Choose a recipe',
 
     // Seasonal
     seasonal_title: 'Seasonal Produce',
@@ -115,6 +127,13 @@ const translations: Record<Locale, Record<string, string>> = {
     seasonal_autumn: 'Autumn',
     seasonal_winter: 'Winter',
     seasonal_empty: 'No produce for this season.',
+    seasonal_items: '{n} items',
+    produce_vegetable: 'Vegetable',
+    produce_fruit: 'Fruit',
+    produce_herb: 'Herb',
+    produce_grain: 'Grain',
+    produce_legume: 'Legume',
+    produce_nut: 'Nut',
 
     // Grocery
     grocery_title: 'Grocery List',
@@ -126,6 +145,7 @@ const translations: Record<Locale, Record<string, string>> = {
     // Settings
     settings_title: 'Settings',
     settings_profile: 'Profile',
+    settings_display_name: 'Display name',
     settings_family: 'Family',
     settings_language: 'Language',
     settings_en: 'English',
@@ -153,6 +173,35 @@ const translations: Record<Locale, Record<string, string>> = {
     season_summer: 'Summer',
     season_autumn: 'Autumn',
     season_winter: 'Winter',
+
+    // Activity
+    activity_recipe_created: 'created \u201C{name}\u201D',
+    activity_recipe_saved: 'saved \u201C{name}\u201D',
+    activity_calendar_added: 'planned {meal}: \u201C{name}\u201D',
+    activity_grocery_added: 'added items to grocery list',
+    activity_member_joined: 'joined the family',
+
+    // Days
+    day_monday: 'Monday',
+    day_tuesday: 'Tuesday',
+    day_wednesday: 'Wednesday',
+    day_thursday: 'Thursday',
+    day_friday: 'Friday',
+    day_saturday: 'Saturday',
+    day_sunday: 'Sunday',
+    day_mon: 'Mon',
+    day_tue: 'Tue',
+    day_wed: 'Wed',
+    day_thu: 'Thu',
+    day_fri: 'Fri',
+    day_sat: 'Sat',
+    day_sun: 'Sun',
+    date_today: 'Today',
+
+    // Greetings
+    greeting_morning: 'Good morning',
+    greeting_afternoon: 'Good afternoon',
+    greeting_evening: 'Good evening',
 
     // Time
     time_just_now: 'Just now',
@@ -208,15 +257,20 @@ const translations: Record<Locale, Record<string, string>> = {
     home_activity: 'Activit\u00e9 familiale',
     home_no_activity: "Pas encore d'activit\u00e9",
     home_this_week: 'Cette semaine',
+    home_todays_meals: 'Repas du jour',
+    home_tomorrow_preview: 'Demain',
+    home_plan_meal: 'Planifier un repas',
     home_plants_challenge_title: 'Le d\u00e9fi des 30 plantes',
     home_plants_challenge_body: "Les recherches de l'American Gut Project montrent que les personnes qui consomment 30 types de plantes diff\u00e9rents ou plus par semaine ont un microbiome intestinal nettement plus diversifi\u00e9, ce qui est li\u00e9 \u00e0 une meilleure sant\u00e9 globale. Suivez votre diversit\u00e9 v\u00e9g\u00e9tale avec Saison !",
 
     // Recipes
     recipe_my: 'Mes recettes',
+    recipe_family: 'Famille',
     recipe_starred: 'Favoris',
     recipe_community: 'Communaut\u00e9',
     recipe_search: 'Rechercher des recettes...',
     recipe_empty_my: "Aucune recette. Cr\u00e9ez votre premi\u00e8re !",
+    recipe_empty_family: 'Aucune recette familiale.',
     recipe_empty_starred: 'Aucune recette favorite.',
     recipe_empty_community: 'Aucune recette communautaire.',
     recipe_new: 'Nouvelle recette',
@@ -225,9 +279,11 @@ const translations: Record<Locale, Record<string, string>> = {
     recipe_unsave: 'Retirer',
     recipe_edit: 'Modifier',
     recipe_delete: 'Supprimer',
+    recipe_delete_confirm: '\u00cates-vous s\u00fbr de vouloir supprimer cette recette ?',
     recipe_add_calendar: 'Ajouter au calendrier',
     recipe_add_grocery: 'Ajouter \u00e0 la liste de courses',
     recipe_ingredients: 'Ingr\u00e9dients',
+    recipe_steps: '\u00c9tapes',
     recipe_produce: 'Produits',
     recipe_preptime: 'Temps de pr\u00e9paration',
     recipe_servings: 'Portions',
@@ -249,6 +305,8 @@ const translations: Record<Locale, Record<string, string>> = {
     create_servings: 'Portions',
     create_ingredients: 'Ingr\u00e9dients',
     create_add_ingredient: 'Ajouter un ingr\u00e9dient',
+    create_steps: '\u00c9tapes',
+    create_add_step: 'Ajouter une \u00e9tape',
     create_produce: 'Produits',
     create_save: 'Enregistrer la recette',
     create_saving: 'Enregistrement...',
@@ -267,6 +325,9 @@ const translations: Record<Locale, Record<string, string>> = {
     calendar_empty: 'Aucun repas pr\u00e9vu',
     calendar_week_of: 'Semaine du',
     calendar_planned: '{n} repas pr\u00e9vus',
+    calendar_last_cooked: 'Dernier : {date}',
+    calendar_never_cooked: 'Jamais cuisin\u00e9',
+    calendar_pick_recipe: 'Choisir une recette',
 
     // Seasonal
     seasonal_title: 'Produits de saison',
@@ -275,6 +336,13 @@ const translations: Record<Locale, Record<string, string>> = {
     seasonal_autumn: 'Automne',
     seasonal_winter: 'Hiver',
     seasonal_empty: 'Aucun produit pour cette saison.',
+    seasonal_items: '{n} produits',
+    produce_vegetable: 'L\u00e9gume',
+    produce_fruit: 'Fruit',
+    produce_herb: 'Herbe',
+    produce_grain: 'C\u00e9r\u00e9ale',
+    produce_legume: 'L\u00e9gumineuse',
+    produce_nut: 'Noix',
 
     // Grocery
     grocery_title: 'Liste de courses',
@@ -286,6 +354,7 @@ const translations: Record<Locale, Record<string, string>> = {
     // Settings
     settings_title: 'Param\u00e8tres',
     settings_profile: 'Profil',
+    settings_display_name: "Nom d'affichage",
     settings_family: 'Famille',
     settings_language: 'Langue',
     settings_en: 'Anglais',
@@ -313,6 +382,35 @@ const translations: Record<Locale, Record<string, string>> = {
     season_summer: '\u00c9t\u00e9',
     season_autumn: 'Automne',
     season_winter: 'Hiver',
+
+    // Activity
+    activity_recipe_created: 'a cr\u00e9\u00e9 \u00ab{name}\u00bb',
+    activity_recipe_saved: 'a enregistr\u00e9 \u00ab{name}\u00bb',
+    activity_calendar_added: 'a planifi\u00e9 {meal} : \u00ab{name}\u00bb',
+    activity_grocery_added: 'a ajout\u00e9 des articles \u00e0 la liste',
+    activity_member_joined: 'a rejoint la famille',
+
+    // Days
+    day_monday: 'Lundi',
+    day_tuesday: 'Mardi',
+    day_wednesday: 'Mercredi',
+    day_thursday: 'Jeudi',
+    day_friday: 'Vendredi',
+    day_saturday: 'Samedi',
+    day_sunday: 'Dimanche',
+    day_mon: 'Lun',
+    day_tue: 'Mar',
+    day_wed: 'Mer',
+    day_thu: 'Jeu',
+    day_fri: 'Ven',
+    day_sat: 'Sam',
+    day_sun: 'Dim',
+    date_today: "Aujourd'hui",
+
+    // Greetings
+    greeting_morning: 'Bonjour',
+    greeting_afternoon: 'Bon apr\u00e8s-midi',
+    greeting_evening: 'Bonsoir',
 
     // Time
     time_just_now: "\u00c0 l'instant",

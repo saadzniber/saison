@@ -121,7 +121,7 @@ export default function SeasonalScreen() {
                 margin: '4px 0 0',
               }}
             >
-              {produce.length} {produce.length === 1 ? 'item' : 'items'}
+              {t('seasonal_items', { n: produce.length })}
             </p>
           )}
         </div>
@@ -247,7 +247,7 @@ export default function SeasonalScreen() {
                       borderRadius: 'var(--radius-full)',
                     }}
                   >
-                    {type}
+                    {t(`produce_${type}`)}
                   </span>
                   <span
                     style={{
